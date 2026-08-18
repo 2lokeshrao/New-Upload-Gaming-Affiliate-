@@ -1,0 +1,6 @@
+{
+  "name": "VipRewards Gaming Affiliate Hub",
+  "description": "Premium, high-converting gaming & casino affiliate platform with live bonus tracking, wheel spin rewards, cloaked links, and full admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

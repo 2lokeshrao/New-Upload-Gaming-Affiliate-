@@ -1,0 +1,52 @@
+# ----------------------------------------------------------------------
+# Proper MIME Types & Security Headers for Production Hosting
+# ----------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType text/css .css
+  AddType application/javascript .js .mjs
+  AddType application/json .json
+  AddType image/svg+xml .svg
+  AddType image/webp .webp
+  AddType image/png .png
+  AddType image/jpeg .jpg .jpeg
+</IfModule>
+
+# Enable Gzip / Deflate Compression for high Mobile Speed Score
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml font/otf font/ttf font/eot
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Enable Keep-Alive connection
+  Header set Connection keep-alive
+
+  # Never cache index.html so deployments are picked up immediately
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # Cache static assets with unique build hashes for 1 year
+  <FilesMatch "\.(js|mjs|css|webp|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve existing files and folders directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Return 404 for missing assets instead of serving index.html as text/html
+  RewriteCond %{REQUEST_URI} ^/assets/ [OR]
+  RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2)$
+  RewriteRule ^ - [R=404,L]
+
+  # All other routes go to index.html for Single Page Application routing
+  RewriteRule ^ index.html [L]
+</IfModule>
