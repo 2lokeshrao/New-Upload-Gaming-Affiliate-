@@ -61,7 +61,7 @@ app.use(compression({
   }
 }));
 app.disable('x-powered-by');
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'affiliate_default_secure_jwt_secret_2026_key';
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || 'admin123456';
 
