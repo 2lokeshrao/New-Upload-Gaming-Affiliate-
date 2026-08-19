@@ -903,6 +903,7 @@ The information provided on the site is for general informational purposes only.
 // server.ts
 import rateLimit from "express-rate-limit";
 import compression from "compression";
+import mysql from "mysql2/promise";
 import fs from "fs";
 import * as Sentry2 from "@sentry/node";
 import winston from "winston";
@@ -972,7 +973,46 @@ var stateCustomPages = [];
 var stateStats = { totalVisits: 0, totalClicks: 0, totalPromoCopies: 0, totalSubPartnerApps: 0, platformStats: {} };
 var stateTrackLogs = [];
 var DATA_FILE = path.join(process.cwd(), "app_data.json");
+var mysqlPool = null;
+async function getMysqlPool() {
+  if (mysqlPool) return mysqlPool;
+  if (!process.env.DB_HOST || !process.env.DB_USER) return null;
+  try {
+    mysqlPool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME || "u123456789_gamingdb",
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
+    await mysqlPool.query(`
+      CREATE TABLE IF NOT EXISTS mysql_state_store (
+        id INT NOT NULL DEFAULT 1,
+        state_json LONGTEXT NOT NULL,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    return mysqlPool;
+  } catch (err) {
+    logger.error("MySQL connection failed", err);
+    return null;
+  }
+}
 async function readDataFile() {
+  try {
+    const pool = await getMysqlPool();
+    if (pool) {
+      const [rows] = await pool.query("SELECT state_json FROM mysql_state_store WHERE id = 1");
+      if (rows && rows.length > 0) {
+        return JSON.parse(rows[0].state_json);
+      }
+    }
+  } catch (e) {
+    logger.error("Error reading from MySQL, falling back to JSON", e);
+  }
   try {
     if (!fs.existsSync(DATA_FILE)) {
       try {

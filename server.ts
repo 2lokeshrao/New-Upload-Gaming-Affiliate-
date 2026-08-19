@@ -13,6 +13,8 @@ import { initialGlobalConfig, initialPlatforms, initialCustomPages } from './src
 import { GamingPlatform, GlobalConfig, AnalyticsStats, TrackLog, SubPartnerApplication } from './src/types';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import mysql from "mysql2/promise";
+
 import fs from 'fs';
 import { exec } from 'child_process';
 import * as Sentry from '@sentry/node';
@@ -105,25 +107,63 @@ let stateTrackLogs: TrackLog[] = [];
 // 1. FLAT FILE JSON STORAGE (Persistent local JSON DB)
 let DATA_FILE = path.join(process.cwd(), 'app_data.json');
 
+let mysqlPool: any = null;
+
+async function getMysqlPool() {
+  if (mysqlPool) return mysqlPool;
+  if (!process.env.DB_HOST || !process.env.DB_USER) return null;
+  
+  try {
+    mysqlPool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'u123456789_gamingdb',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
+    
+    await mysqlPool.query(`
+      CREATE TABLE IF NOT EXISTS mysql_state_store (
+        id INT NOT NULL DEFAULT 1,
+        state_json LONGTEXT NOT NULL,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    
+    return mysqlPool;
+  } catch (err) {
+    logger.error('MySQL connection failed', err);
+    return null;
+  }
+}
+
 async function readDataFile() {
+  try {
+    const pool = await getMysqlPool();
+    if (pool) {
+      const [rows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
+      if (rows && rows.length > 0) {
+        return JSON.parse(rows[0].state_json);
+      }
+    }
+  } catch(e) {
+    logger.error('Error reading from MySQL, falling back to JSON', e);
+  }
+
   try {
     if (!fs.existsSync(DATA_FILE)) {
       try {
         await fs.promises.writeFile(DATA_FILE, JSON.stringify({
-          platforms: {},
-          settings: {},
-          custom_pages: {},
-          sub_partners: {}
+          platforms: {}, settings: {}, custom_pages: {}, sub_partners: {}
         }));
       } catch (writeErr) {
-        // Fallback to /tmp if process.cwd() is read-only
         DATA_FILE = '/tmp/app_data.json';
         if (!fs.existsSync(DATA_FILE)) {
           await fs.promises.writeFile(DATA_FILE, JSON.stringify({
-            platforms: {},
-            settings: {},
-            custom_pages: {},
-            sub_partners: {}
+            platforms: {}, settings: {}, custom_pages: {}, sub_partners: {}
           }));
         }
       }
@@ -136,7 +176,8 @@ async function readDataFile() {
   }
 }
 
-async function writeDataFile(data: any) {
+async function writeDataFile
+(data: any) {
   try {
     await fs.promises.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
