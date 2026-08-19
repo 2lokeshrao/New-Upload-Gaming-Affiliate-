@@ -141,42 +141,163 @@ async function getMysqlPool() {
 }
 
 async function readDataFile() {
+  const db = { platforms: {}, settings: { globalConfig: {} }, custom_pages: {}, sub_partners: {} };
+  
   try {
     const pool = await getMysqlPool();
-    if (pool) {
-      const [rows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
-      if (rows && rows.length > 0) {
-        return JSON.parse(rows[0].state_json);
+    if (!pool) throw new Error("No MySQL Pool");
+
+    // 1. Fetch Global Config
+    const [configRows] = await pool.query('SELECT * FROM global_config ORDER BY id DESC LIMIT 1');
+    if (configRows && configRows.length > 0) {
+      const gc = configRows[0];
+      db.settings.globalConfig = {
+        heroHeadline: gc.hero_headline || "Claim Your 100% Guaranteed Welcome Bonuses",
+        heroSubheading: gc.hero_subheading || "Stop Wasting Money on Unverified Sites.",
+        topBannerTemplate: gc.top_banner_template || "",
+        enableSubPartnerProgram: !!gc.enable_sub_partner_program,
+        subPartnerHeadline: gc.sub_partner_headline || "",
+        copyrightText: gc.copyright_text || "© 2026 Bonus Promo Code. All rights reserved.",
+        footerDisclaimerText: gc.footer_disclaimer_text || "",
+        telegramUrl: gc.telegram_url || "",
+        instagramUrl: gc.instagram_url || "",
+        tiktokUrl: gc.tiktok_url || "",
+        whatsappGroupUrl: gc.whatsapp_group_url || "",
+        youtubeUrl: gc.youtube_url || "",
+        articles: []
+      };
+    }
+
+    // 2. Fetch Platforms
+    const [platformRows] = await pool.query('SELECT * FROM platforms');
+    if (platformRows) {
+      for (const r of platformRows) {
+        db.platforms[r.id] = {
+          id: r.id,
+          slug: r.slug,
+          name: r.name,
+          logoUrl: r.logo_url,
+          rating: Number(r.rating) || 0,
+          starRating: r.star_rating || 5,
+          bonusText: r.bonus_text,
+          promoCode: r.promo_code,
+          rawAffiliateUrl: r.raw_affiliate_url,
+          masterPartnerUrl: r.master_partner_url,
+          claimUrl: r.claim_url,
+          reviewContent: r.review_content,
+          isFeatured: !!r.is_featured,
+          featuredRank: r.featured_rank,
+          isActive: !!r.is_active,
+          clicksCount: r.clicks_count || 0,
+          copiesCount: r.copies_count || 0,
+          category: r.category,
+          bonusTitle: r.bonus_title,
+          minDeposit: r.min_deposit,
+          metaTitle: r.meta_title,
+          metaDescription: r.meta_description,
+          metaKeywords: r.meta_keywords,
+          averageUserRating: Number(r.average_user_rating) || 0,
+          totalReviewsCount: r.total_reviews_count || 0
+        };
       }
     }
-  } catch(e) {
-    logger.error('Error reading from MySQL, falling back to JSON', e);
-  }
 
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      try {
-        await fs.promises.writeFile(DATA_FILE, JSON.stringify({
-          platforms: {}, settings: {}, custom_pages: {}, sub_partners: {}
-        }));
-      } catch (writeErr) {
-        DATA_FILE = '/tmp/app_data.json';
-        if (!fs.existsSync(DATA_FILE)) {
-          await fs.promises.writeFile(DATA_FILE, JSON.stringify({
-            platforms: {}, settings: {}, custom_pages: {}, sub_partners: {}
-          }));
+    // 3. Fetch Custom Pages
+    const [pageRows] = await pool.query('SELECT * FROM custom_pages');
+    if (pageRows) {
+      for (const r of pageRows) {
+        db.custom_pages[r.slug] = {
+          id: r.id,
+          slug: r.slug,
+          title: r.title,
+          content: r.content,
+          isActive: !!r.is_active
+        };
+      }
+    }
+
+    // 4. Fetch Sub Partners
+    const [subRows] = await pool.query('SELECT * FROM sub_partners');
+    if (subRows) {
+      for (const r of subRows) {
+        db.sub_partners[r.id] = {
+          id: r.id,
+          fullName: r.full_name,
+          email: r.email,
+          whatsapp: r.whatsapp,
+          platformId: r.platform_id,
+          platformName: r.platform_name,
+          trafficSource: r.traffic_source,
+          estimatedMonthlyPlayers: r.estimated_monthly_players,
+          status: r.status,
+          appliedAt: r.applied_at ? new Date(r.applied_at).toISOString() : new Date().toISOString()
+        };
+      }
+    }
+
+    // 5. Fetch Articles
+    const [articleRows] = await pool.query('SELECT * FROM articles');
+    let articlesData = [];
+    if (articleRows) {
+      articlesData = articleRows.map(r => ({
+        id: r.id,
+        slug: r.slug,
+        title: r.title,
+        content: r.content,
+        category: r.category,
+        platformId: r.platform_id || undefined,
+        platformName: r.platform_name || undefined,
+        metaTitle: r.meta_title,
+        metaDescription: r.meta_description,
+        coverImage: r.cover_image || undefined,
+        author: r.author || 'Admin',
+        views: r.views || 0,
+        status: r.status || 'published',
+        publishedAt: r.published_at ? new Date(r.published_at).toISOString() : new Date().toISOString(),
+        tags: []
+      }));
+    }
+
+    // 6. Merge with JSON state (for complex fields like customCoupons, trackingPixels that aren't relational)
+    try {
+      const [jsonRows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
+      if (jsonRows && jsonRows.length > 0) {
+        const fullJson = JSON.parse(jsonRows[0].state_json);
+        
+        // Map complex settings
+        if (fullJson.settings && fullJson.settings.globalConfig) {
+          db.settings.globalConfig = { ...fullJson.settings.globalConfig, ...db.settings.globalConfig };
+        }
+        db.settings.globalConfig.articles = articlesData; // Force override with relational data
+
+        // Only use JSON platforms/pages if relational is completely empty
+        if (Object.keys(db.platforms).length === 0 && fullJson.platforms) {
+          db.platforms = fullJson.platforms;
+        }
+        if (Object.keys(db.custom_pages).length === 0 && fullJson.custom_pages) {
+          db.custom_pages = fullJson.custom_pages;
         }
       }
-    }
-    const raw = await fs.promises.readFile(DATA_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (e) {
-    logger.error('Error reading data file', e);
-    return { platforms: {}, settings: {}, custom_pages: {}, sub_partners: {} };
+    } catch(e) {}
+
+  } catch(e) {
+    logger.error('Error reading from MySQL relational tables', e);
   }
+
+  // Seed Initial Data if Tables are Empty
+  if (Object.keys(db.platforms).length === 0) {
+     db.platforms = {};
+     for (const p of initialPlatforms) db.platforms[p.id] = p;
+     db.settings.globalConfig = initialGlobalConfig;
+     for (const c of initialCustomPages) db.custom_pages[c.slug] = c;
+     await writeDataFile(db); // Push to DB
+  }
+
+  return db;
 }
 
 async function writeDataFile
+
 (data: any) {
   try {
     await fs.promises.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
