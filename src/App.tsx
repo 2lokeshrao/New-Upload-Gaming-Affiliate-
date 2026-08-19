@@ -625,18 +625,14 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-white font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
       <TopLoadingBar isLoading={isNavigating} />
       {/* Sticky Header Navigation */}
-      <header className="sticky top-0 z-[100] flex flex-col bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-lg">
-        {/* 1. Geo Top Banner */}
-        <TopBanner geo={geo} bannerTemplate={config.topBannerTemplate} activeUrgencyTimer={activeUrgencyTimer} />
-
-        {/* Social Media VIP Channels Banner */}
-        <SocialMediaBar config={config} variant="banner" />
-        
-
+      <header className="sticky top-0 z-[100] flex flex-col bg-slate-950/95 backdrop-blur-md shadow-lg">
         <Navbar platforms={platforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
-
-        
       </header>
+
+      <div className="flex flex-col border-b border-slate-800 bg-slate-950">
+        <TopBanner geo={geo} bannerTemplate={config.topBannerTemplate} activeUrgencyTimer={activeUrgencyTimer} />
+        <SocialMediaBar config={config} variant="banner" />
+      </div>
 
       {/* Main Container */}
       <main className="pb-16">
