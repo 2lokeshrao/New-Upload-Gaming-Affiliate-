@@ -41,10 +41,10 @@ export const Navbar: React.FC<{ platforms: GamingPlatform[]; customPages: Custom
 
           {/* Desktop Menu */}
           <div className="hidden md:block">
-            <div className="flex items-center space-x-4">
-              <a href="/" onClick={(e) => handleNav(e, '/')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold">Home</a>
-              <a href="/banking/best-virtual-cards-for-gaming" onClick={(e) => handleNav(e, '/banking/best-virtual-cards-for-gaming')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold flex items-center gap-1"><CreditCard className="w-4 h-4"/> Finance Hub</a>
-              <a href="/crypto/binance-usdt-withdrawal-guide" onClick={(e) => handleNav(e, '/crypto/binance-usdt-withdrawal-guide')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold flex items-center gap-1"><Globe className="w-4 h-4"/> Crypto</a>
+            <div className="flex items-center space-x-1 lg:space-x-4">
+              <a href="/" onClick={(e) => handleNav(e, '/')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold whitespace-nowrap shrink-0">Home</a>
+              <a href="/banking/best-virtual-cards-for-gaming" onClick={(e) => handleNav(e, '/banking/best-virtual-cards-for-gaming')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold whitespace-nowrap shrink-0 flex items-center gap-1"><CreditCard className="w-4 h-4"/> Finance Hub</a>
+              <a href="/crypto/binance-usdt-withdrawal-guide" onClick={(e) => handleNav(e, '/crypto/binance-usdt-withdrawal-guide')} className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-bold whitespace-nowrap shrink-0 flex items-center gap-1"><Globe className="w-4 h-4"/> Crypto</a>
               
               {/* Search */}
               <div className="relative">
@@ -53,7 +53,7 @@ export const Navbar: React.FC<{ platforms: GamingPlatform[]; customPages: Custom
                 </div>
                 <input
                   type="text"
-                  className="block w-64 pl-10 pr-3 py-2 border border-slate-700 rounded-lg leading-5 bg-slate-950 text-slate-300 placeholder-slate-500 focus:outline-none focus:bg-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 sm:text-sm transition-all"
+                  className="block w-40 lg:w-64 pl-10 pr-3 py-2 border border-slate-700 rounded-lg leading-5 bg-slate-950 text-slate-300 placeholder-slate-500 focus:outline-none focus:bg-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 sm:text-sm transition-all"
                   placeholder="Search articles, guides, brands..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
