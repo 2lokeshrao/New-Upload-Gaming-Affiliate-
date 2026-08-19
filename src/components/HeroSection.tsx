@@ -45,22 +45,22 @@ export const HeroSection: React.FC<HeroProps> = ({ headline, subheading, onScrol
             {subheading}
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mb-10 text-slate-300 text-xs sm:text-sm font-mono">
-            <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 flex flex-col items-center justify-center">
-              <span className="text-purple-400 font-bold text-base sm:text-lg">500% BOOST</span>
-              <span className="text-slate-400 text-[10px]">VERIFIED CODES</span>
+          <div className="grid grid-cols-4 gap-1 sm:gap-3 max-w-3xl mx-auto mb-6 sm:mb-10 text-slate-300 text-[9px] sm:text-sm font-mono">
+            <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+              <span className="text-purple-400 font-bold text-xs sm:text-lg">500% BOOST</span>
+              <span className="text-slate-400 text-[8px] sm:text-[10px]">VERIFIED CODES</span>
             </div>
-            <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-3 flex flex-col items-center justify-center">
-              <span className="text-cyan-400 font-bold text-base sm:text-lg">INSTANT PIX/UPI</span>
-              <span className="text-slate-400 text-[10px]">0% WITHDRAWAL FEES</span>
+            <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+              <span className="text-cyan-400 font-bold text-xs sm:text-lg">INSTANT PIX/UPI</span>
+              <span className="text-slate-400 text-[8px] sm:text-[10px]">0% WITHDRAWAL FEES</span>
             </div>
-            <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-3 flex flex-col items-center justify-center">
-              <span className="text-emerald-400 font-bold text-base sm:text-lg">NO KYC PASS</span>
-              <span className="text-slate-400 text-[10px]">DIRECT REGISTER</span>
+            <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+              <span className="text-emerald-400 font-bold text-xs sm:text-lg">NO KYC PASS</span>
+              <span className="text-slate-400 text-[8px] sm:text-[10px]">DIRECT REGISTER</span>
             </div>
-            <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-3 flex flex-col items-center justify-center">
-              <span className="text-amber-400 font-bold text-base sm:text-lg">24/7 LIVE</span>
-              <span className="text-slate-400 text-[10px]">TELEGRAM SUPPORT</span>
+            <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+              <span className="text-amber-400 font-bold text-xs sm:text-lg">24/7 LIVE</span>
+              <span className="text-slate-400 text-[8px] sm:text-[10px]">TELEGRAM SUPPORT</span>
             </div>
           </div>
 
@@ -116,22 +116,22 @@ export const HeroSection: React.FC<HeroProps> = ({ headline, subheading, onScrol
         </p>
 
         {/* Value metrics pill bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mb-10 text-slate-300 text-xs sm:text-sm font-medium">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center">
-            <span className="text-amber-400 font-bold text-base sm:text-lg">Up to 500%</span>
-            <span className="text-slate-400 text-[11px]">Deposit Bonuses</span>
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-3 max-w-3xl mx-auto mb-6 sm:mb-10 text-slate-300 text-[9px] sm:text-sm font-medium">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+            <span className="text-amber-400 font-bold text-xs sm:text-lg">Up to 500%</span>
+            <span className="text-slate-400 text-[8px] sm:text-[11px]">Deposit Bonuses</span>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center">
-            <span className="text-cyan-400 font-bold text-base sm:text-lg">Instant</span>
-            <span className="text-slate-400 text-[11px]">UPI / Pix Withdrawals</span>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+            <span className="text-cyan-400 font-bold text-xs sm:text-lg">Instant</span>
+            <span className="text-slate-400 text-[8px] sm:text-[11px]">UPI / Pix Withdrawals</span>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center">
-            <span className="text-emerald-400 font-bold text-base sm:text-lg">No KYC</span>
-            <span className="text-slate-400 text-[11px]">Fast Registration</span>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+            <span className="text-emerald-400 font-bold text-xs sm:text-lg">No KYC</span>
+            <span className="text-slate-400 text-[8px] sm:text-[11px]">Fast Registration</span>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col items-center justify-center">
-            <span className="text-purple-400 font-bold text-base sm:text-lg">24/7 Verified</span>
-            <span className="text-slate-400 text-[11px]">Licensed Sites Only</span>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-1.5 sm:p-3 flex flex-col items-center justify-center">
+            <span className="text-purple-400 font-bold text-xs sm:text-lg">24/7 Verified</span>
+            <span className="text-slate-400 text-[8px] sm:text-[11px]">Licensed Sites Only</span>
           </div>
         </div>
 
