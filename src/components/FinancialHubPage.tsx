@@ -159,7 +159,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
 
           {/* Sidebar / Loan Offers */}
           <aside className="lg:col-span-1 space-y-8">
-            <div className="bg-gradient-to-br from-emerald-950 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 sticky top-24">
+            <div className="bg-gradient-to-br from-emerald-950 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 relative">
               <div className="flex items-center gap-2 mb-6">
                 <Banknote className="w-6 h-6 text-emerald-400" />
                 <h3 className="text-xl font-black text-white">Instant Personal Loans</h3>
