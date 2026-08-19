@@ -18,6 +18,7 @@ if (process.env.SENTRY_DSN) {
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -906,6 +907,8 @@ import fs from "fs";
 import * as Sentry2 from "@sentry/node";
 import winston from "winston";
 import sharp from "sharp";
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = path.dirname(__filename);
 var logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
