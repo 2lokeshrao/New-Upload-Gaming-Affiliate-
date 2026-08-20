@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import React from 'react';
-import { ShieldCheck, Users } from 'lucide-react';
+import { ShieldCheck, Users, Smartphone } from 'lucide-react';
 import { GamingPlatform, GlobalConfig, CustomPage } from '../types';
 import { SocialMediaBar } from './SocialMediaBar';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -12,6 +12,7 @@ interface FooterProps {
   config: GlobalConfig;
   setShowSubPartnerModal: (val: boolean) => void;
   setShowReferModal: (val: boolean) => void;
+  setShowPwaModal?: (val: boolean) => void;
   setShowAdminLogin: (val: boolean) => void;
   adminToken: string | null;
   setViewingAdmin: (val: boolean) => void;
@@ -24,6 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
   config,
   setShowSubPartnerModal,
   setShowReferModal,
+  setShowPwaModal,
   setShowAdminLogin,
   adminToken,
   setViewingAdmin
@@ -82,21 +84,33 @@ export const Footer: React.FC<FooterProps> = ({
                     <p className="max-w-3xl mx-auto leading-relaxed text-slate-400 text-[11px]">
             {config.footerDisclaimerText || 'This site is an independent gaming review and affiliate portal. We provide promotional bonus codes and reviews for licensed online gaming and sports platforms. Please gamble responsibly. 18+ Only.'} <a href="/privacy-policy" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/privacy-policy'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="underline hover:text-amber-400 ml-2">{t('footer.privacy')}</a> | <a href="/terms" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/terms'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="underline hover:text-amber-400 ml-2">{t('footer.terms')}</a>
           </p>
+          {/* Social Media Footer Icons (Bottom) */}
+          <div className="flex justify-center py-2 mt-2">
+            <SocialMediaBar config={config} variant="footer" />
+          </div>
 
-          <div className="flex items-center justify-center gap-4 text-[11px] pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] pt-2">
             <button
               onClick={() => setShowSubPartnerModal(true)}
-              className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1 rounded-md border border-cyan-500/30"
+              className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-cyan-500/30 whitespace-nowrap"
             >
               <Users className="w-3 h-3" /> {t('footer.subPartner')}
             </button>
 
             <button
               onClick={() => setShowReferModal(true)}
-              className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1 rounded-md border border-emerald-500/30"
+              className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-emerald-500/30 whitespace-nowrap"
             >
               {t('footer.refer')}
             </button>
+            {setShowPwaModal && (
+              <button
+                onClick={() => setShowPwaModal(true)}
+                className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap"
+              >
+                <Smartphone className="w-3 h-3" /> {t('nav.getApp')}
+              </button>
+            )}
 
             {/* Stealth Admin Access - Completely invisible but clickable for mobile admins */}
             <button
