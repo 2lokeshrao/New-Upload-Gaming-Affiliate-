@@ -259,3 +259,5 @@ export function injectCustomPageSchema(page: any) {
   
   scriptElement.textContent = JSON.stringify(schemaArr.length === 1 ? schemaArr[0] : schemaArr, null, 2);
 }
+
+

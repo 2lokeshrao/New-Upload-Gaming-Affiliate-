@@ -2,10 +2,10 @@
 import DOMPurify from 'dompurify';
 import React, { useEffect, useMemo } from 'react';
 import { CustomPage, GamingPlatform, GlobalConfig, AIArticle } from '../types';
-import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift, Globe } from 'lucide-react';
+import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AffiliateLinkCard } from './AffiliateLinkCard';
-import { injectSeoTags, injectCustomPageSchema } from '../utils/seo';
+import { injectSeoTags } from '../utils/seo';
 
 export const CustomPageView: React.FC<{ 
   page: CustomPage;
@@ -19,7 +19,6 @@ export const CustomPageView: React.FC<{
     const desc = page.metaDescription || page.title;
     const url = `https://bonuspromocode.in/${page.slug}`;
     injectSeoTags(title, desc, url, '');
-    injectCustomPageSchema(page);
   }, [page]);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {

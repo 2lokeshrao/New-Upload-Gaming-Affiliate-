@@ -581,6 +581,27 @@ export default function App() {
     );
   }
 
+  
+  if (currentPath === '/articles') {
+    return (
+      <>
+        <TopLoadingBar isLoading={isNavigating} />
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={platforms} config={config} /></Suspense>
+        <Footer
+          platforms={platforms}
+          customPages={customPages}
+          geo={geo}
+          config={config}
+          setShowSubPartnerModal={setShowSubPartnerModal}
+          setShowReferModal={setShowReferModal} setShowPwaModal={setShowPwaModal}
+          setShowAdminLogin={setShowAdminLogin}
+          adminToken={adminToken}
+          setViewingAdmin={setViewingAdmin}
+        />
+      </>
+    );
+  }
+
   if (currentPath.startsWith('/brands/')) {
     return (
       <>
