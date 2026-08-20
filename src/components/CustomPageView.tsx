@@ -1,6 +1,8 @@
 
 import DOMPurify from 'dompurify';
 import React, { useEffect, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { CustomPage, GamingPlatform, GlobalConfig, AIArticle } from '../types';
 import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift } from 'lucide-react';
 import { Sidebar } from './Sidebar';
@@ -84,15 +86,27 @@ export const CustomPageView: React.FC<{
                 </div>
               )}
 
-              <article 
-                className="prose prose-invert prose-slate max-w-none prose-a:text-emerald-400 hover:prose-a:text-emerald-300"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(page.content || '', {
-                    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'img'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'src', 'alt']
-                  })
-                }}
-              />
+              <article className="prose prose-invert prose-slate max-w-none prose-a:text-emerald-400 hover:prose-a:text-emerald-300">
+                <ReactMarkdown 
+                  rehypePlugins={[rehypeSanitize]}
+                  components={{
+                    h1: ({node, ...props}) => <h1 className="text-3xl md:text-5xl font-black text-white mt-12 mb-6 leading-tight" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-2xl md:text-3xl font-black text-white mt-10 mb-4 border-b border-slate-800 pb-2" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-xl md:text-2xl font-bold text-white mt-8 mb-4" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-lg md:text-xl font-bold text-white mt-6 mb-3" {...props} />,
+                    p: ({node, ...props}) => <p className="text-slate-300 leading-relaxed mb-6 text-base md:text-lg" {...props} />,
+                    a: ({node, ...props}) => <a className="text-emerald-400 hover:text-emerald-300 underline underline-offset-4 decoration-emerald-500/30 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                    ul: ({node, ...props}) => <ul className="list-disc list-outside pl-6 mb-6 space-y-2 text-slate-300" {...props} />,
+                    ol: ({node, ...props}) => <ol className="list-decimal list-outside pl-6 mb-6 space-y-2 text-slate-300" {...props} />,
+                    li: ({node, ...props}) => <li className="leading-relaxed pl-2" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                    blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-emerald-500 pl-4 py-1 italic bg-slate-900/50 text-slate-400 mb-6 rounded-r-lg" {...props} />,
+                    hr: ({node, ...props}) => <hr className="border-t border-slate-800 my-8" {...props} />
+                  }}
+                >
+                  {page.content || ''}
+                </ReactMarkdown>
+              </article>
             </div>
 
             {page.affiliateLinks && page.affiliateLinks.length > 0 && (

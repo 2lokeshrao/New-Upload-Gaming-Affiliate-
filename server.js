@@ -1125,7 +1125,23 @@ async function readDataFile() {
     } catch (e) {
     }
   } catch (e) {
-    logger.error("Error reading from MySQL relational tables", e);
+    try {
+      let fileToRead = DATA_FILE;
+      if (!fs.existsSync(fileToRead) && fs.existsSync("/tmp/app_data.json")) {
+        fileToRead = "/tmp/app_data.json";
+      }
+      if (fs.existsSync(fileToRead)) {
+        const fileContent = fs.readFileSync(fileToRead, "utf-8");
+        const parsed = JSON.parse(fileContent);
+        if (parsed.platforms) db.platforms = parsed.platforms;
+        if (parsed.settings) db.settings = parsed.settings;
+        if (parsed.custom_pages) db.custom_pages = parsed.custom_pages;
+        if (parsed.sub_partners) db.sub_partners = parsed.sub_partners;
+        logger.info("Loaded data from " + DATA_FILE);
+      }
+    } catch (fsErr) {
+      logger.error("Error reading local data file", fsErr);
+    }
   }
   if (Object.keys(db.platforms).length === 0) {
     db.platforms = {};
