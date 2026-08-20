@@ -293,7 +293,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               }`}
             >
               <Gamepad2 className="w-4 h-4" />
-              <span>Gaming Platforms ({platforms.length})</span>
+              <span>Manage Platforms ({platforms.length})</span>
             </button>
 
             <button
@@ -453,7 +453,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             <Gamepad2 className="w-5 h-5" />
-            <span>Gaming Platforms ({platforms.length})</span>
+            <span>Manage Platforms ({platforms.length})</span>
           </button>
 
           <button

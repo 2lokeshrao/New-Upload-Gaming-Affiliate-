@@ -28,6 +28,7 @@ const AiArticleView = lazy(() => import('./components/AiArticleView').then(m => 
 const WalletArticlePage = lazy(() => import('./components/WalletArticlePage').then(m => ({ default: m.WalletArticlePage })));
 const FinancialHubPage = lazy(() => import('./components/FinancialHubPage').then(m => ({ default: m.FinancialHubPage })));
 const CustomPageView = lazy(() => import('./components/CustomPageView').then(m => ({ default: m.CustomPageView })));
+const ArticlesHubPage = lazy(() => import('./components/ArticlesHubPage').then(m => ({ default: m.ArticlesHubPage })));
 const PwaInstallModal = lazy(() => import('./components/PwaInstallModal').then(m => ({ default: m.PwaInstallModal })));
 const ReferFriendModal = lazy(() => import('./components/ReferFriendModal').then(m => ({ default: m.ReferFriendModal })));
 const OfferGrid = lazy(() => import('./components/OfferGrid').then(m => ({ default: m.OfferGrid })));
@@ -559,6 +560,27 @@ export default function App() {
   }
 
   // Dynamic Brand Pages (Programmatic SEO Category 1)
+  
+  if (currentPath === '/articles') {
+    return (
+      <>
+        <TopLoadingBar isLoading={isNavigating} />
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={platforms} config={config} /></Suspense>
+        <Footer
+          platforms={platforms}
+          customPages={customPages}
+          geo={geo}
+          config={config}
+          setShowSubPartnerModal={setShowSubPartnerModal}
+          setShowReferModal={setShowReferModal} setShowPwaModal={setShowPwaModal}
+          setShowAdminLogin={setShowAdminLogin}
+          adminToken={adminToken}
+          setViewingAdmin={setViewingAdmin}
+        />
+      </>
+    );
+  }
+
   if (currentPath.startsWith('/brands/')) {
     return (
       <>
