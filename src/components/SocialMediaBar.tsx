@@ -5,7 +5,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 interface SocialMediaBarProps {
   config: GlobalConfig;
-  variant?: 'header' | 'footer' | 'banner';
+  variant?: 'header' | 'footer' | 'banner' | 'pills';
 }
 
 export const SocialMediaBar: React.FC<SocialMediaBarProps> = ({ config, variant = 'header' }) => {
@@ -23,6 +23,72 @@ export const SocialMediaBar: React.FC<SocialMediaBarProps> = ({ config, variant 
   };
 
   if (!hasSocials) return null;
+
+  if (variant === 'pills') {
+    return (
+      <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-center max-w-full py-1">
+        {config.telegramUrl && (
+          <a
+            href={getTelegramUrl()}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 shrink-0 whitespace-nowrap shadow-sm"
+          >
+            <Send className="w-3.5 h-3.5 text-sky-400" />
+            <span>Telegram Channel {language.toUpperCase()}</span>
+          </a>
+        )}
+
+        {config.whatsappGroupUrl && (
+          <a
+            href={config.whatsappGroupUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 shrink-0 whitespace-nowrap shadow-sm"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+            <span>WhatsApp VIP Group</span>
+          </a>
+        )}
+
+        {config.instagramUrl && (
+          <a
+            href={config.instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 shrink-0 whitespace-nowrap shadow-sm"
+          >
+            <Instagram className="w-3.5 h-3.5 text-pink-400" />
+            <span>Instagram</span>
+          </a>
+        )}
+
+        {config.tiktokUrl && (
+          <a
+            href={config.tiktokUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 shrink-0 whitespace-nowrap shadow-sm"
+          >
+            <Video className="w-3.5 h-3.5 text-cyan-400" />
+            <span>TikTok</span>
+          </a>
+        )}
+
+        {config.youtubeUrl && (
+          <a
+            href={config.youtubeUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 shrink-0 whitespace-nowrap shadow-sm"
+          >
+            <Youtube className="w-3.5 h-3.5 text-red-400" />
+            <span>YouTube</span>
+          </a>
+        )}
+      </div>
+    );
+  }
 
   if (variant === 'banner') {
     return (

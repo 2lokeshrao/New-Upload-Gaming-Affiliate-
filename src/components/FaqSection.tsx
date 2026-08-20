@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, ShieldCheck, Users, Gamepad2 } from 'lucide-react';
+import { GlobalConfig } from '../types';
+import { SocialMediaBar } from './SocialMediaBar';
 
 interface FaqItem {
   q: string;
@@ -63,7 +65,11 @@ const B2B_PARTNER_FAQS: FaqItem[] = [
   }
 ];
 
-export const FaqSection: React.FC = () => {
+interface FaqSectionProps {
+  config?: GlobalConfig;
+}
+
+export const FaqSection: React.FC<FaqSectionProps> = ({ config }) => {
   const [activeTab, setActiveTab] = useState<'players' | 'partners'>('players');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
@@ -157,6 +163,12 @@ export const FaqSection: React.FC = () => {
           Disclaimer: All listed platforms are verified for licensing and prompt payments. Please gamble responsibly.
         </span>
       </div>
+
+      {config && (
+        <div className="mt-5 flex justify-center">
+          <SocialMediaBar config={config} variant="pills" />
+        </div>
+      )}
     </section>
   );
 };

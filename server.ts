@@ -296,9 +296,7 @@ async function readDataFile() {
   return db;
 }
 
-async function writeDataFile
-
-(data: any) {
+async function writeDataFile(data: any) {
   try {
     await fs.promises.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
@@ -308,6 +306,21 @@ async function writeDataFile
     } catch (err2) {
       logger.error('Error writing data file', err2);
     }
+  }
+
+  // 2. Persist to MySQL Database if available (Lifetime storage for Hostinger/Cloud)
+  try {
+    const pool = await getMysqlPool();
+    if (pool) {
+      const stateString = JSON.stringify(data);
+      await pool.query(
+        'INSERT INTO mysql_state_store (id, state_json) VALUES (1, ?) ON DUPLICATE KEY UPDATE state_json = ?',
+        [stateString, stateString]
+      );
+      logger.info('Successfully persisted state to MySQL database.');
+    }
+  } catch (mysqlErr) {
+    logger.error('Error persisting state to MySQL:', mysqlErr);
   }
 }
 

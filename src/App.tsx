@@ -708,7 +708,7 @@ export default function App() {
           <PaymentGuideSection geo={geo} />
 
           {/* 7. FAQ Section */}
-          <FaqSection />
+          <FaqSection config={config} />
         </Suspense>
       </main>
 

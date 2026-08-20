@@ -1147,6 +1147,19 @@ async function writeDataFile(data) {
       logger.error("Error writing data file", err2);
     }
   }
+  try {
+    const pool = await getMysqlPool();
+    if (pool) {
+      const stateString = JSON.stringify(data);
+      await pool.query(
+        "INSERT INTO mysql_state_store (id, state_json) VALUES (1, ?) ON DUPLICATE KEY UPDATE state_json = ?",
+        [stateString, stateString]
+      );
+      logger.info("Successfully persisted state to MySQL database.");
+    }
+  } catch (mysqlErr) {
+    logger.error("Error persisting state to MySQL:", mysqlErr);
+  }
 }
 async function setDoc(collection, docId, data) {
   const db = await readDataFile();
