@@ -141,7 +141,7 @@ async function getMysqlPool() {
 }
 
 async function readDataFile() {
-  const db = { platforms: {}, settings: { globalConfig: {} }, custom_pages: {}, sub_partners: {} };
+  const db: any = { platforms: {}, settings: { globalConfig: {} }, custom_pages: {}, sub_partners: {} };
   
   try {
     const pool = await getMysqlPool();

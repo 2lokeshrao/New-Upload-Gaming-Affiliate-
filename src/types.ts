@@ -1,3 +1,11 @@
+
+export interface FaqItem {
+  id: string;
+  q: string;
+  a: string;
+  badge?: string;
+  category: 'players' | 'partners';
+}
 export interface PartnerPanelConfig {
   platformId: string;
   platformName: string;
@@ -126,6 +134,7 @@ export interface ExitIntentPopupConfig {
 }
 
 export interface GlobalConfig {
+  faqs?: FaqItem[];
   heroHeadline: string;
   heroSubheading: string;
   topBannerTemplate: string;

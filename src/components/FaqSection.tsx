@@ -1,68 +1,24 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, ShieldCheck, Users, Gamepad2 } from 'lucide-react';
-import { GlobalConfig } from '../types';
+import { GlobalConfig, FaqItem } from '../types';
 import { SocialMediaBar } from './SocialMediaBar';
 
-interface FaqItem {
-  q: string;
-  a: string;
-  badge?: string;
-}
+
 
 const PLAYER_FAQS: FaqItem[] = [
-  {
-    q: "Kya mera purana account hote hue bhi mujhe 500% Welcome Bonus milega?",
-    a: "Nahi! Gaming platforms (jaise 1Win, Mostbet) ke rules ke mutabiq 500% Welcome Deposit Bonus aur 200 Free Spins sirf NAYE REGISTRATION (First-time Users) ke liye hote hain. Agar aapka pehle se account hai, toh aap hamare 'Email Eligibility Checker' se check karein aur naye email id ya fresh mobile number se register karein.",
-    badge: "Important Rule"
-  },
-  {
-    q: "Welcome bonus code 'MAXBOOST500' ko activate kaise karein?",
-    a: "Registration page par 'Add Promo Code' par click karein aur promo code 'MAXBOOST500' enter karein. Apne first deposit (Minimum ₹300 / $5) par 500% bonus aapke wallet me instantly add ho jayega.",
-    badge: "Promo Guide"
-  },
-  {
-    q: "Withdrawal (Paisa Nikalna) kitna fast hota he aur kaunse payment options hain?",
-    a: "Sabhi listed platforms 100% instant withdrawals support karte hain via UPI (GPay, PhonePe, Paytm), IMPS, Crypto (USDT, BTC), aur Bank Transfer. Maximum cashout time 5 se 15 minute rehta hai.",
-    badge: "Fast Cashout"
-  },
-  {
-    q: "Kya in gaming apps par KYC verify karna zaroori hai?",
-    a: "Nahi! Minimum deposit aur standard withdrawals ke liye koi KYC biometric identity proof submit karne ki zarurat nahi hoti. Aap turant registration ke baad games play kar sakte hain.",
-    badge: "No KYC"
-  },
-  {
-    q: "Lucky Wheel Spin se jeeta hua bonus kaise claim karein?",
-    a: "Jaise hi aap Lucky Wheel spin karte hain aur prize unlock hota hai, 'REGISTER & CLAIM NOW' button par click karein. Yeh aapko official promo claim page par redirect kar dega jahan promo code auto-applied milega.",
-    badge: "Lucky Wheel"
-  }
+  { id: "p1", category: "players", q: "Kya mera purana account hote hue bhi mujhe 500% Welcome Bonus milega?", a: "Nahi! Gaming platforms (jaise 1Win, Mostbet) ke rules ke mutabiq 500% Welcome Deposit Bonus aur 200 Free Spins sirf NAYE REGISTRATION (First-time Users) ke liye hote hain. Agar aapka pehle se account hai, toh aap hamare 'Email Eligibility Checker' se check karein aur naye email id ya fresh mobile number se register karein.", badge: "Important Rule" },
+  { id: "p2", category: "players", q: "Welcome bonus code 'MAXBOOST500' ko activate kaise karein?", a: "Registration page par 'Add Promo Code' par click karein aur promo code 'MAXBOOST500' enter karein. Apne first deposit (Minimum ₹300 / $5) par 500% bonus aapke wallet me instantly add ho jayega.", badge: "Promo Guide" },
+  { id: "p3", category: "players", q: "Withdrawal (Paisa Nikalna) kitna fast hota he aur kaunse payment options hain?", a: "Sabhi listed platforms 100% instant withdrawals support karte hain via UPI (GPay, PhonePe, Paytm), IMPS, Crypto (USDT, BTC), aur Bank Transfer. Maximum cashout time 5 se 15 minute rehta hai.", badge: "Fast Cashout" },
+  { id: "p4", category: "players", q: "Kya in gaming apps par KYC verify karna zaroori hai?", a: "Nahi! Minimum deposit aur standard withdrawals ke liye koi KYC biometric identity proof submit karne ki zarurat nahi hoti. Aap turant registration ke baad games play kar sakte hain.", badge: "No KYC" },
+  { id: "p5", category: "players", q: "Lucky Wheel Spin se jeeta hua bonus kaise claim karein?", a: "Jaise hi aap Lucky Wheel spin karte hain aur prize unlock hota hai, 'REGISTER & CLAIM NOW' button par click karein. Yeh aapko official promo claim page par redirect kar dega jahan promo code auto-applied milega.", badge: "Lucky Wheel" }
 ];
 
 const B2B_PARTNER_FAQS: FaqItem[] = [
-  {
-    q: "Hamari Gaming Application ko is portal par list karne ka kya process he?",
-    a: "Agar aap ek Gaming Application, Casino operator, ya Gambling brand hain aur hamare portal par top recommendation badge pana chahte hain, toh aap hamare Sub-Partner & Listing form ke zariye submit kar sakte hain ya Admin Support se WhatsApp/Telegram par rabta kar sakte hain.",
-    badge: "Platform Listing"
-  },
-  {
-    q: "Sub-Partner Program kya hai aur kitna RevShare commission milta hai?",
-    a: "Hamare Master Affiliate Panel ke zariye sub-partners ko 45% se 50% tak LIFETIME Revenue Share milta hai. Jo bhi players aapke referral link ya promo code se register karke deposit karte hain, unka net revenue aapko daily payout me milta hai.",
-    badge: "50% RevShare"
-  },
-  {
-    q: "Payouts kaise aur kab transfer kiye jaate hain?",
-    a: "Sub-partner commissions daily/weekly settle kiye jaate hain via USDT (TRC20/BEP20), Crypto, Bank Transfer, ya Direct Telegram Wallet. Koi hidden deduction ya negative carryover nahi hota.",
-    badge: "Daily Payouts"
-  },
-  {
-    q: "Kya naye Partners ko dedicated affiliate manager milta hai?",
-    a: "Haan! Har approved sub-partner aur gaming app team ko ek 24/7 Dedicated Account Manager allocate hota hai jo custom promo codes, banner graphics, aur tracking analytics me help karta hai.",
-    badge: "24/7 Support"
-  },
-  {
-    q: "API / Postback URL integration kaise setup hota hai?",
-    a: "Aap hamare master admin panel se S2S Postback URLs, Server-to-Server webhooks, aur real-time player conversion tracking APIs easily connect kar sakte hain.",
-    badge: "S2S Postback"
-  }
+  { id: "b1", category: "partners", q: "Hamari Gaming Application ko is portal par list karne ka kya process he?", a: "Agar aap ek Gaming Application, Casino operator, ya Gambling brand hain aur hamare portal par top recommendation badge pana chahte hain, toh aap hamare Sub-Partner & Listing form ke zariye submit kar sakte hain ya Admin Support se WhatsApp/Telegram par rabta kar sakte hain.", badge: "Platform Listing" },
+  { id: "b2", category: "partners", q: "Sub-Partner Program kya hai aur kitna RevShare commission milta hai?", a: "Hamare Master Affiliate Panel ke zariye sub-partners ko 45% se 50% tak LIFETIME Revenue Share milta hai. Jo bhi players aapke referral link ya promo code se register karke deposit karte hain, unka net revenue aapko daily payout me milta hai.", badge: "50% RevShare" },
+  { id: "b3", category: "partners", q: "Payouts kaise aur kab transfer kiye jaate hain?", a: "Sub-partner commissions daily/weekly settle kiye jaate hain via USDT (TRC20/BEP20), Crypto, Bank Transfer, ya Direct Telegram Wallet. Koi hidden deduction ya negative carryover nahi hota.", badge: "Daily Payouts" },
+  { id: "b4", category: "partners", q: "Kya naye Partners ko dedicated affiliate manager milta hai?", a: "Haan! Har approved sub-partner aur gaming app team ko ek 24/7 Dedicated Account Manager allocate hota hai jo custom promo codes, banner graphics, aur tracking analytics me help karta hai.", badge: "24/7 Support" },
+  { id: "b5", category: "partners", q: "API / Postback URL integration kaise setup hota hai?", a: "Aap hamare master admin panel se S2S Postback URLs, Server-to-Server webhooks, aur real-time player conversion tracking APIs easily connect kar sakte hain.", badge: "S2S Postback" }
 ];
 
 interface FaqSectionProps {

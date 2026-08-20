@@ -1,7 +1,7 @@
 import React, { Suspense, useState, useEffect } from 'react';
 const MDEditor = React.lazy(() => import('@uiw/react-md-editor'));
 import { GamingPlatform, GlobalConfig, AnalyticsStats, TrackLog, SubPartnerApplication, CustomPage } from '../types';
-import { LayoutDashboard, ChevronUp, ChevronDown, Activity, Gamepad2, Settings, BarChart2, Plus, Trash2, Edit3, Check, X, Menu, Key, Power, Flame, Eye, LogOut, Sparkles, Lock, Users, MessageCircle, ExternalLink, Mail, Search, Ticket } from 'lucide-react';
+import { HelpCircle, LayoutDashboard, ChevronUp, ChevronDown, Activity, Gamepad2, Settings, BarChart2, Plus, Trash2, Edit3, Check, X, Menu, Key, Power, Flame, Eye, LogOut, Sparkles, Lock, Users, MessageCircle, ExternalLink, Mail, Search, Ticket } from 'lucide-react';
 import { SeoManagerTab } from './SeoManagerTab';
 import { SeoHealthTab } from './SeoHealthTab';
 import { CustomCouponManagerTab } from './CustomCouponManagerTab';
@@ -55,7 +55,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   customPages,
   onSaveCustomPages
 }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'partnerapi' | 'platforms' | 'config' | 'coupons' | 'analytics' | 'subpartners' | 'seo' | 'feedback' | 'pixels' | 'sitemap' | 'push' | 'abtest' | 'pages' | 'articles' | 'footer'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'partnerapi' | 'platforms' | 'config' | 'coupons' | 'analytics' | 'subpartners' | 'seo' | 'feedback' | 'pixels' | 'sitemap' | 'push' | 'abtest' | 'pages' | 'articles' | 'footer' | 'faqs'>('dashboard');
 
   // CMS state
   const [pagesList, setPagesList] = useState<CustomPage[]>(customPages || []);
@@ -340,6 +340,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <span>Footer & Links Manager</span>
               </div>
             </button>
+            <button
+              onClick={() => { setActiveTab('faqs'); setIsMobileMenuOpen(false); }}
+              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-3 transition-all ${
+                activeTab === 'faqs' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
+              } hover:bg-slate-800`}
+            >
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-purple-400" />
+                <span>FAQs Manager</span>
+              </div>
+            </button>
+
 
             <button 
               onClick={() => { setActiveTab('subpartners'); setIsMobileMenuOpen(false); }}
@@ -534,7 +546,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           >
             <Menu className="w-5 h-5 text-cyan-400" />
             <span>Footer & Links Manager</span>
-          </button>
+            </button>
+            <button 
+              onClick={() => setActiveTab('faqs')}
+              className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-all ${
+                activeTab === 'faqs'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <HelpCircle className="w-5 h-5 text-purple-400" />
+              <span>FAQs Manager</span>
+            </button>
+
 
           <button
             onClick={() => setActiveTab('seo')}
@@ -1901,6 +1925,130 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
 
           {/* TAB: CUSTOM PAGES */}
+          
+          {activeTab === 'faqs' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h2 className="text-xl font-black text-white">Manage FAQs</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const newFaqs = [...(localConfig.faqs || []), { id: Date.now().toString(), category: 'players' as const, q: '', a: '', badge: '' }];
+                      setLocalConfig({ ...localConfig, faqs: newFaqs });
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition-all"
+                  >
+                    + Add Player FAQ
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFaqs = [...(localConfig.faqs || []), { id: Date.now().toString(), category: 'partners' as const, q: '', a: '', badge: '' }];
+                      setLocalConfig({ ...localConfig, faqs: newFaqs });
+                    }}
+                    className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-all"
+                  >
+                    + Add Partner FAQ
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {(localConfig.faqs || []).map((faq, idx) => (
+                  <div key={faq.id || idx} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className={`text-xs font-bold px-2 py-1 rounded ${faq.category === 'players' ? 'bg-purple-500/20 text-purple-300' : 'bg-cyan-500/20 text-cyan-300'}`}>
+                        {faq.category === 'players' ? 'Players FAQ' : 'Partners FAQ'}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newFaqs = [...localConfig.faqs];
+                          newFaqs.splice(idx, 1);
+                          setLocalConfig({ ...localConfig, faqs: newFaqs });
+                        }}
+                        className="text-red-400 hover:text-red-300 text-xs font-bold"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Question</label>
+                        <input
+                          type="text"
+                          value={faq.q}
+                          onChange={(e) => {
+                            const newFaqs = [...localConfig.faqs];
+                            newFaqs[idx].q = e.target.value;
+                            setLocalConfig({ ...localConfig, faqs: newFaqs });
+                          }}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-bold text-sm"
+                          placeholder="e.g. How to claim?"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Answer</label>
+                        <textarea
+                          value={faq.a}
+                          onChange={(e) => {
+                            const newFaqs = [...localConfig.faqs];
+                            newFaqs[idx].a = e.target.value;
+                            setLocalConfig({ ...localConfig, faqs: newFaqs });
+                          }}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Badge (Optional)</label>
+                        <input
+                          type="text"
+                          value={faq.badge || ''}
+                          onChange={(e) => {
+                            const newFaqs = [...localConfig.faqs];
+                            newFaqs[idx].badge = e.target.value;
+                            setLocalConfig({ ...localConfig, faqs: newFaqs });
+                          }}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-bold text-sm"
+                          placeholder="e.g. Important Rule"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {(!localConfig.faqs || localConfig.faqs.length === 0) && (
+                  <p className="text-slate-500 text-sm italic">No FAQs added yet. Defaults will be shown to users.</p>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-slate-800">
+                <button
+                  onClick={async () => {
+                    // Similar to handleSaveConfig
+                    try {
+                      const res = await fetch('/api/admin/config', {
+                        method: 'POST',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ config: localConfig })
+                      });
+                      if (res.ok) alert('FAQs saved successfully!');
+                      else alert('Failed to save FAQs');
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black hover:scale-105 transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  Save FAQs
+                </button>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'pages' && (
             <CustomPageManagerTab
               pages={pagesList}
