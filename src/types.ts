@@ -255,6 +255,16 @@ export interface CustomPage {
   content: string;
   isActive: boolean;
   affiliateLinks?: AffiliateLink[];
+  metaTitle?: string;
+  metaDescription?: string;
+  targetKeywords?: string;
+  promoCode?: string;
+  faqs?: {q: string; a: string}[];
+  schemaEnabled?: boolean;
+  schemaType?: string;
+  schemaRatingValue?: number;
+  schemaRatingCount?: number;
+  schemaSoftwarePlatform?: string;
 }
 
 export interface AIArticle {

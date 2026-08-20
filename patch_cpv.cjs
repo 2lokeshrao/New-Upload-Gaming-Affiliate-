@@ -1,11 +1,14 @@
+const fs = require('fs');
+let code = fs.readFileSync('src/components/CustomPageView.tsx', 'utf8');
 
+const updatedJsx = `
 import DOMPurify from 'dompurify';
 import React, { useEffect, useMemo } from 'react';
 import { CustomPage, GamingPlatform, GlobalConfig, AIArticle } from '../types';
-import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift, Globe } from 'lucide-react';
+import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AffiliateLinkCard } from './AffiliateLinkCard';
-import { injectSeoTags, injectCustomPageSchema } from '../utils/seo';
+import { injectSeoTags } from '../utils/seo';
 
 export const CustomPageView: React.FC<{ 
   page: CustomPage;
@@ -15,11 +18,10 @@ export const CustomPageView: React.FC<{
 }> = ({ page, platforms = [], customPages = [], config }) => {
 
   useEffect(() => {
-    const title = page.metaTitle || `${page.title} | BonusPromoCode`;
+    const title = page.metaTitle || \`\${page.title} | BonusPromoCode\`;
     const desc = page.metaDescription || page.title;
-    const url = `https://bonuspromocode.in/${page.slug}`;
+    const url = \`https://bonuspromocode.in/\${page.slug}\`;
     injectSeoTags(title, desc, url, '');
-    injectCustomPageSchema(page);
   }, [page]);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -141,7 +143,7 @@ export const CustomPageView: React.FC<{
                         className="w-full text-left p-4 flex items-center justify-between text-white font-bold hover:bg-slate-800/50 transition-colors"
                       >
                         <span>{faq.q}</span>
-                        <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={\`w-5 h-5 text-slate-500 transition-transform \${openFaq === i ? 'rotate-180' : ''}\`} />
                       </button>
                       {openFaq === i && (
                         <div className="p-4 border-t border-slate-800 text-slate-300 text-sm leading-relaxed bg-slate-900/50">
@@ -161,8 +163,8 @@ export const CustomPageView: React.FC<{
                   {relatedArticles.map((article) => (
                     <a 
                       key={article.id}
-                      href={`/articles/${article.slug}`}
-                      onClick={(e) => handleNav(e, `/articles/${article.slug}`)}
+                      href={\`/articles/\${article.slug}\`}
+                      onClick={(e) => handleNav(e, \`/articles/\${article.slug}\`)}
                       className="block p-4 bg-slate-950 border border-slate-800 rounded-xl hover:border-amber-500/50 transition-all group"
                     >
                       <h3 className="text-white font-bold mb-2 group-hover:text-amber-400 transition-colors line-clamp-2">{article.title}</h3>
@@ -188,3 +190,7 @@ export const CustomPageView: React.FC<{
     </div>
   );
 };
+`;
+
+fs.writeFileSync('src/components/CustomPageView.tsx', updatedJsx, 'utf8');
+console.log('Patched CustomPageView.tsx');
