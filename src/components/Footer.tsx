@@ -84,10 +84,6 @@ export const Footer: React.FC<FooterProps> = ({
                     <p className="max-w-3xl mx-auto leading-relaxed text-slate-400 text-[11px]">
             {config.footerDisclaimerText || 'This site is an independent gaming review and affiliate portal. We provide promotional bonus codes and reviews for licensed online gaming and sports platforms. Please gamble responsibly. 18+ Only.'} <a href="/privacy-policy" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/privacy-policy'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="underline hover:text-amber-400 ml-2">{t('footer.privacy')}</a> | <a href="/terms" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/terms'); window.dispatchEvent(new PopStateEvent('popstate')); }} className="underline hover:text-amber-400 ml-2">{t('footer.terms')}</a>
           </p>
-          {/* Social Media Footer Icons (Bottom) */}
-          <div className="flex justify-center py-2 mt-2">
-            <SocialMediaBar config={config} variant="footer" />
-          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] pt-2">
             <button
