@@ -19,6 +19,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({
+
   platforms,
   customPages,
   geo,
@@ -31,6 +32,17 @@ export const Footer: React.FC<FooterProps> = ({
   setViewingAdmin
 }) => {
   const { t } = useLanguage();
+
+  const handleModalOpen = (setter: (v: boolean) => void) => {
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+    setTimeout(() => {
+      setter(true);
+    }, 50);
+  };
+
 
   return (
     <footer className="bg-slate-900 border-t border-slate-800/80 py-10 px-4 text-center text-slate-400 text-xs">
@@ -87,21 +99,21 @@ export const Footer: React.FC<FooterProps> = ({
 
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] pt-2">
             <button
-              onClick={() => setShowSubPartnerModal(true)}
+              onClick={() => handleModalOpen(setShowSubPartnerModal)}
               className="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-cyan-500/30 whitespace-nowrap"
             >
               <Users className="w-3 h-3" /> {t('footer.subPartner')}
             </button>
 
             <button
-              onClick={() => setShowReferModal(true)}
+              onClick={() => handleModalOpen(setShowReferModal)}
               className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-emerald-500/30 whitespace-nowrap"
             >
               {t('footer.refer')}
             </button>
             {setShowPwaModal && (
               <button
-                onClick={() => setShowPwaModal(true)}
+                onClick={() => handleModalOpen(setShowPwaModal)}
                 className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer bg-slate-800/80 px-3 py-1.5 rounded-md border border-amber-500/30 whitespace-nowrap"
               >
                 <Smartphone className="w-3 h-3" /> {t('nav.getApp')}
@@ -112,9 +124,14 @@ export const Footer: React.FC<FooterProps> = ({
             <button
               onClick={() => {
                 if (adminToken) {
-                  setViewingAdmin(true);
+                  // go home first to close any pages
+                  if (window.location.pathname !== '/') {
+                    window.history.pushState({}, '', '/');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }
+                  setTimeout(() => setViewingAdmin(true), 50);
                 } else {
-                  setShowAdminLogin(true);
+                  handleModalOpen(setShowAdminLogin);
                 }
               }}
               className="w-10 h-10 opacity-0 bg-transparent cursor-default"

@@ -103,6 +103,15 @@ let statePlatforms: GamingPlatform[] = [...initialPlatforms];
 let stateConfig: GlobalConfig = { ...initialGlobalConfig };
 let stateSubPartners: SubPartnerApplication[] = [];
 let stateCustomPages: any[] = [];
+
+let statsSaveTimeout: any = null;
+function triggerStatsSave() {
+  if (statsSaveTimeout) clearTimeout(statsSaveTimeout);
+  statsSaveTimeout = setTimeout(() => {
+    setDoc('settings', 'globalStats', stateStats).catch(e => logger.error('Failed to save stats', e));
+  }, 5000);
+}
+
 let stateStats: AnalyticsStats = { totalVisits: 0, totalClicks: 0, totalPromoCopies: 0, totalSubPartnerApps: 0, platformStats: {} };
 let stateTrackLogs: TrackLog[] = [];
 
@@ -278,6 +287,16 @@ async function loadState() {
         await setDoc('custom_pages', initCp.slug, initCp);
         stateCustomPages.push(initCp);
       }
+    }
+
+    
+    // 5. Load Stats
+    const statsSnap = await getDoc('settings', 'globalStats');
+    if (statsSnap) {
+      stateStats = statsSnap as AnalyticsStats;
+    } else {
+      logger.info("Database missing globalStats: Seeding...");
+      await setDoc('settings', 'globalStats', stateStats);
     }
 
     logger.info("Loaded state from MySQL Collections.");
@@ -598,7 +617,7 @@ app.get('/api/image-optimize', async (req, res) => {
 
 // API: Get Public Data
 app.get('/api/data', (req, res) => {
-  stateStats.totalVisits += 1;
+  stateStats.totalVisits += 1; triggerStatsSave();
   const geo = getGeoFromRequest(req);
 
   const safePlatforms = statePlatforms.map(p => ({
@@ -649,6 +668,18 @@ app.get('/api/data', (req, res) => {
 });
 
 // API: Get Full Admin State
+
+app.post('/api/admin/reset-stats', verifyJwtToken, async (req, res) => {
+  try {
+    stateStats = { totalVisits: 0, totalClicks: 0, totalPromoCopies: 0, totalSubPartnerApps: 0, platformStats: {} };
+    await setDoc('settings', 'globalStats', stateStats);
+    res.json({ success: true, message: "Stats reset successfully", stats: stateStats });
+  } catch (err) {
+    logger.error("Error resetting stats", err);
+    res.status(500).json({ error: "Failed to reset stats" });
+  }
+});
+
 app.get('/api/admin/data', verifyJwtToken, (req, res) => {
   const geo = getGeoFromRequest(req);
   res.json({
@@ -746,10 +777,10 @@ app.post('/api/track', (req, res) => {
   const platform = statePlatforms.find(p => p.id === platformId);
 
   if (eventType === 'click') {
-    stateStats.totalClicks += 1;
+    stateStats.totalClicks += 1; triggerStatsSave();
     if (platform) platform.clicksCount = (platform.clicksCount || 0) + 1;
   } else if (eventType === 'copy') {
-    stateStats.totalPromoCopies += 1;
+    stateStats.totalPromoCopies += 1; triggerStatsSave();
     if (platform) platform.copiesCount = (platform.copiesCount || 0) + 1;
   }
 
@@ -799,7 +830,7 @@ app.get('/go/:slug', (req, res) => {
 
   // Record click count
   platform.clicksCount = (platform.clicksCount || 0) + 1;
-  stateStats.totalClicks += 1;
+  stateStats.totalClicks += 1; triggerStatsSave();
 
   // Tracking Pixels Helper
   const fbPixelId = platform.trackingPixels?.facebookPixelId || stateConfig.globalTrackingPixels?.facebookPixelId;

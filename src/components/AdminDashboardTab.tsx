@@ -78,6 +78,23 @@ export const AdminDashboardTab: React.FC<AdminDashboardTabProps> = ({
     return `$${valUSD.toLocaleString('en-US')}`;
   };
 
+  
+  const handleResetStats = async () => {
+    if (!window.confirm("Are you sure you want to reset all analytics stats to 0? This cannot be undone.")) return;
+    try {
+      const res = await fetch('/api/admin/reset-stats', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+      });
+      if (res.ok) {
+        alert("Stats reset successfully!");
+        window.location.reload();
+      }
+    } catch (e) {
+      alert("Failed to reset stats");
+    }
+  };
+
   const handleSyncAllPanels = () => {
     setIsSyncing(true);
 
@@ -253,7 +270,7 @@ export const AdminDashboardTab: React.FC<AdminDashboardTabProps> = ({
             </div>
             <div>
               <div className="text-3xl font-black text-sky-300 font-mono tracking-tight">
-                {(stats?.totalClicks || 1240).toLocaleString()}
+                {(stats?.totalClicks ?? 0).toLocaleString()}
               </div>
               <div className="text-xs text-slate-400 font-bold mt-1 flex items-center gap-1">
                 <span className="text-sky-300">Live Traffic & Redirect Clicks</span>

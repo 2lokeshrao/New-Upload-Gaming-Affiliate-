@@ -20,6 +20,7 @@ import { useLanguage } from './i18n/LanguageContext';
 import { ScrollToTop } from './components/ScrollToTop';
 
 import { formatLocalizedBonus } from './utils/currency';
+import { initialPlatforms, initialGlobalConfig, initialCustomPages } from './data';
 
 import { Language } from './i18n/translations';
 
@@ -44,6 +45,7 @@ const PaymentGuideSection = lazy(() => import('./components/PaymentGuideSection'
 const CustomCouponsSection = lazy(() => import('./components/CustomCouponsSection').then(m => ({ default: m.CustomCouponsSection })));
 const SubPartnerModal = lazy(() => import('./components/SubPartnerModal').then(m => ({ default: m.SubPartnerModal })));
 const ClaimWithQrModal = lazy(() => import('./components/ClaimWithQrModal').then(m => ({ default: m.ClaimWithQrModal })));
+const TestimonialsSection = lazy(() => import('./components/TestimonialsSection').then(m => ({ default: m.TestimonialsSection })));
 const PlatformFeedbackModal = lazy(() => import('./components/PlatformFeedbackModal').then(m => ({ default: m.PlatformFeedbackModal })));
 const AdminLoginModal = lazy(() => import('./components/AdminLoginModal').then(m => ({ default: m.AdminLoginModal })));
 const ExitIntentModal = lazy(() => import('./components/ExitIntentModal').then(m => ({ default: m.ExitIntentModal })));
@@ -254,6 +256,10 @@ export default function App() {
       }
     } catch (err) {
       console.error('Failed to load initial affiliate data:', err);
+      // Fallback to local data to prevent hanging skeleton on fetch failure
+      setPlatforms(initialPlatforms);
+      setConfig(initialGlobalConfig);
+      setCustomPages(initialCustomPages);
     } finally {
       setLoading(false);
     }
@@ -744,6 +750,11 @@ export default function App() {
           /></Suspense>
 
           {/* 6. SEO Article & Keyword Index Table */}
+          
+          <Suspense fallback={<div className="min-h-40" />}>
+            <TestimonialsSection feedbacks={config?.approvedFeedbacks || []} />
+          </Suspense>
+
           <ProgrammaticSeoArticles
             platforms={activePlatforms}
             geo={geo}
