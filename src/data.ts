@@ -255,6 +255,42 @@ export const initialGlobalConfig: GlobalConfig = {
 
 export const initialPlatforms: GamingPlatform[] = [
   {
+    id: "hostinger",
+    slug: "hostinger",
+    name: "Hostinger",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hostinger_logo.svg/2560px-Hostinger_logo.svg.png",
+    rating: 9.8,
+    starRating: 5,
+    averageUserRating: 4.9,
+    totalReviewsCount: 15420,
+    badges: ["20% OFF", "Free Domain", "Free SSL"],
+    bonusText: "Flat 20% OFF on Premium Web Hosting",
+    promoCode: "BONUS20OFF",
+    rawAffiliateUrl: "https://www.hostinger.com/in?REFERRALCODE=BONUS20OFF",
+    masterPartnerUrl: "https://www.hostinger.com/in?REFERRALCODE=BONUS20OFF",
+    isFeatured: true,
+    featuredRank: 1, 
+    isActive: true,
+    clicksCount: 0,
+    copiesCount: 0,
+    category: "Web Hosting",
+    metaTitle: "Hostinger Promo Code BONUS20OFF | Get 20% Discount",
+    metaDescription: "Use referral code BONUS20OFF for Hostinger to claim a flat 20% discount on premium web hosting plans. Includes free domain and SSL.",
+    metaKeywords: "hostinger promo code, hostinger referral code, BONUS20OFF, hostinger discount",
+    reviewContent: `# Hostinger Web Hosting Review
+
+Hostinger is one of the best and most affordable web hosting providers in the world.
+
+### Why Choose Hostinger?
+- **Free Domain & SSL** for the first year
+- **24/7 Live Support**
+- **Blazing Fast NVMe SSD Storage**
+- **99.9% Uptime Guarantee**
+
+Using the promo code **BONUS20OFF** gives you an instant 20% discount on your hosting plan.`
+  }
+,
+  {
     id: "1win",
     slug: "1win",
     name: "1Win Casino & Sports",
@@ -868,6 +904,50 @@ export const sampleFaqs = [
 
 
 export const initialCustomPages: CustomPage[] = [
+  {
+    id: "page_hostinger",
+    slug: "hostinger-promo-code",
+    title: "Hostinger Web Hosting Promo Code - Get 20% OFF",
+    content: `## Why You Need Professional Hosting
+
+Whether you are running an affiliate site, a blog, or an eCommerce store, your web hosting is the foundation of your online business.
+
+### Why We Recommend Hostinger
+1. **Unbeatable Value:** You get a Free Domain, Free SSL, and Free Email accounts with the Premium Plan.
+2. **Lightning Fast:** Powered by LiteSpeed web servers and NVMe storage.
+3. **Beginner Friendly:** Their hPanel is incredibly easy to use, and WordPress installs in just 1 click.
+
+### How to Claim Your 20% Discount
+1. Click the button below to visit Hostinger.
+2. Add the **Premium** or **Business** Web Hosting plan to your cart (48 months gives the best value).
+3. During checkout, enter the referral code **BONUS20OFF**.
+4. The 20% discount will be applied instantly!
+
+This is a limited-time referral offer, so make sure you secure your hosting today.`,
+    isActive: true,
+    metaTitle: "Hostinger Promo Code 2026 | Flat 20% OFF Coupon",
+    metaDescription: "Claim your flat 20% OFF Hostinger promo code BONUS20OFF. Apply this referral code at checkout for huge discounts on premium web hosting.",
+    targetKeywords: "hostinger promo code, hostinger coupon, BONUS20OFF",
+    promoCode: "BONUS20OFF",
+    affiliateLinks: [
+      {
+        id: "link_hostinger_1",
+        brandName: "Hostinger",
+        title: "Claim 20% OFF Hosting",
+        url: "/go/hostinger",
+        buttonText: "Claim Discount",
+        badgeText: "VERIFIED"
+      }
+    ],
+    faqs: [
+      { q: "Is the domain really free?", a: "Yes! Hostinger includes a free domain for the first year with Premium and Business plans." },
+      { q: "How do I apply the code BONUS20OFF?", a: "At the checkout page, look for the 'Have a coupon code?' section, enter BONUS20OFF and click Apply." }
+    ],
+    schemaEnabled: true,
+    schemaType: "SoftwareApplication",
+    schemaSoftwarePlatform: "Web Hosting"
+  }
+,
   {
     id: 'page_privacy',
     slug: 'privacy-policy',

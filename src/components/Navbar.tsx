@@ -32,10 +32,7 @@ export const Navbar: React.FC<{ platforms: GamingPlatform[]; customPages: Custom
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <a href="/" onClick={(e) => handleNav(e, '/')} className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                <Landmark className="w-4 h-4 text-slate-950" />
-              </div>
-              <span className="font-black text-xl text-white hidden sm:block">BonusPromoCode</span>
+              <img src="/logo.svg" alt="Bonus Promo Code" className="h-9 sm:h-11 w-auto" />
             </a>
           </div>
 
