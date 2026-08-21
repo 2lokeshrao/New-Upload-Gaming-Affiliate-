@@ -3,6 +3,8 @@ import DOMPurify from 'isomorphic-dompurify';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import path from 'path';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc, deleteDoc } from 'firebase/firestore';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -107,6 +109,25 @@ let stateTrackLogs: TrackLog[] = [];
 // 1. FLAT FILE JSON STORAGE (Persistent local JSON DB)
 let DATA_FILE = path.join(process.cwd(), 'app_data.json');
 
+const firebaseConfig = {
+  projectId: "alien-aura-2xctm",
+  appId: "1:174239214287:web:63078c091f820e5d4ca5ba",
+  apiKey: "AIzaSyAXYCxpjm3iPIXoKwacqqYqU9nw4Bh0gGk",
+  authDomain: "alien-aura-2xctm.firebaseapp.com",
+  firestoreDatabaseId: "ai-studio-viprewardsgaming-107607cc-236e-4fc6-91c7-209f529cf75b",
+  storageBucket: "alien-aura-2xctm.firebasestorage.app",
+  messagingSenderId: "174239214287",
+  measurementId: ""
+};
+
+const fbApp = initializeApp(firebaseConfig);
+// Note: We leave databaseId empty or specify it if needed. For web SDK, we can pass it if supported, or rely on default if it matches.
+// Wait, web SDK doesn't natively accept databaseId in getFirestore(app) easily unless it's v10+.
+// AI Studio Firebase tool uses a named database: 'ai-studio-viprewardsgaming-107607cc-236e-4fc6-91c7-209f529cf75b'
+// Actually, in Web SDK: getFirestore(app, "databaseId")
+const firestoreDb = getFirestore(fbApp, "ai-studio-viprewardsgaming-107607cc-236e-4fc6-91c7-209f529cf75b");
+
+
 let mysqlPool: any = null;
 let mysqlConnectionFailed = false;
 
@@ -143,148 +164,77 @@ async function getMysqlPool() {
   }
 }
 
-async function readDataFile() {
-  const db: any = { platforms: {}, settings: { globalConfig: {} }, custom_pages: {}, sub_partners: {} };
-  
+
+async function setDoc(coll: string, docId: string, data: any) {
   try {
-    const pool = await getMysqlPool();
-    if (!pool) throw new Error("No MySQL Pool");
-
-    // Retrieve entire state from the monolithic JSON store
-    const [jsonRows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
-    if (jsonRows && jsonRows.length > 0) {
-      const fullJson = JSON.parse(jsonRows[0].state_json);
-      
-      if (fullJson.settings) db.settings = fullJson.settings;
-      if (fullJson.platforms) db.platforms = fullJson.platforms;
-      if (fullJson.custom_pages) db.custom_pages = fullJson.custom_pages;
-      if (fullJson.sub_partners) db.sub_partners = fullJson.sub_partners;
-    } else {
-      throw new Error("No state_json found in mysql_state_store");
-    }
-  } catch(e) {
-    // Fallback to local flat file if MySQL fails or is empty
-    try {
-      let fileToRead = DATA_FILE;
-      if (!fs.existsSync(fileToRead) && fs.existsSync('/tmp/app_data.json')) {
-        fileToRead = '/tmp/app_data.json';
-      }
-      if (fs.existsSync(fileToRead)) {
-        const fileContent = fs.readFileSync(fileToRead, 'utf-8');
-        const parsed = JSON.parse(fileContent);
-        if (parsed.platforms) db.platforms = parsed.platforms;
-        if (parsed.settings) db.settings = parsed.settings;
-        if (parsed.custom_pages) db.custom_pages = parsed.custom_pages;
-        if (parsed.sub_partners) db.sub_partners = parsed.sub_partners;
-        logger.info('Loaded data from ' + DATA_FILE);
-      }
-    } catch(fsErr) {
-      logger.error('Error reading local data file', fsErr);
-    }
-  }
-
-  // Seed Initial Data if Tables/JSON are Empty
-  if (Object.keys(db.platforms).length === 0) { 
-     db.platforms = {};
-     for (const p of initialPlatforms) db.platforms[p.id] = p;
-     db.settings.globalConfig = initialGlobalConfig;
-     for (const c of initialCustomPages) db.custom_pages[c.slug] = c;
-     await writeDataFile(db); // Push to DB
-  }
-
-  return db;
-}
-
-async function writeDataFile(data: any) {
-  try {
-    await fs.promises.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
+    await fsSetDoc(doc(firestoreDb, coll, docId), data);
   } catch (e) {
-    try {
-      DATA_FILE = '/tmp/app_data.json';
-      await fs.promises.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-    } catch (err2) {
-      logger.error('Error writing data file', err2);
-    }
+    logger.error(`Error setting doc ${coll}/${docId}:`, e);
   }
-
-  // 2. Persist to MySQL Database if available (Lifetime storage for Hostinger/Cloud)
+}
+async function getCollection(coll: string) {
   try {
-    const pool = await getMysqlPool();
-    if (pool) {
-      const stateString = JSON.stringify(data);
-      await pool.query(
-        'INSERT INTO mysql_state_store (id, state_json) VALUES (1, ?) ON DUPLICATE KEY UPDATE state_json = ?',
-        [stateString, stateString]
-      );
-      logger.info('Successfully persisted state to MySQL database.');
-    }
-  } catch (mysqlErr) {
-    logger.error('Error persisting state to MySQL:', mysqlErr);
+    const querySnapshot = await fsGetDocs(collection(firestoreDb, coll));
+    const docs: any[] = [];
+    querySnapshot.forEach((doc) => docs.push(doc.data()));
+    return docs;
+  } catch (e) {
+    logger.error(`Error getting collection ${coll}:`, e);
+    return [];
+  }
+}
+async function getDoc(coll: string, docId: string) {
+  try {
+    const docSnap = await fsGetDoc(doc(firestoreDb, coll, docId));
+    if (docSnap.exists()) return docSnap.data();
+    return null;
+  } catch (e) {
+    logger.error(`Error getting doc ${coll}/${docId}:`, e);
+    return null;
+  }
+}
+async function updateDoc(coll: string, docId: string, updates: any) {
+  try {
+    await fsUpdateDoc(doc(firestoreDb, coll, docId), updates);
+  } catch (e) {
+    logger.error(`Error updating doc ${coll}/${docId}:`, e);
   }
 }
 
-async function setDoc(collection: string, docId: string, data: any) {
-  const db = await readDataFile();
-  if (!db[collection]) db[collection] = {};
-  db[collection][docId] = data;
-  await writeDataFile(db);
-}
+// Dummy these out so old code won't crash if it calls them
+async function readDataFile() { return {}; }
+async function writeDataFile(data: any) {}
 
-async function getCollection(collection: string) {
-  const db = await readDataFile();
-  if (!db[collection]) return [];
-  return Object.values(db[collection]);
-}
-
-async function getDoc(collection: string, docId: string) {
-  const db = await readDataFile();
-  if (!db[collection]) return null;
-  return db[collection][docId] || null;
-}
-
-async function updateDoc(collection: string, docId: string, updates: any) {
-  const existing = await getDoc(collection, docId);
-  if (existing) {
-    await setDoc(collection, docId, { ...existing, ...updates });
-  }
-}
 
 async function saveState() {
   try {
-    const db = await readDataFile();
-    
     // 1. Sync Platforms
     if (Array.isArray(statePlatforms)) {
-      db.platforms = {};
       for (const p of statePlatforms) {
-        db.platforms[p.id] = p;
+        await setDoc('platforms', p.id, p);
       }
     }
 
     // 2. Sync Config
     if (stateConfig) {
-      db.settings = db.settings || {};
-      db.settings['globalConfig'] = stateConfig;
+      await setDoc('settings', 'globalConfig', stateConfig);
     }
 
     // 3. Sync Custom Pages
     if (Array.isArray(stateCustomPages)) {
-      db.custom_pages = {};
       for (const cp of stateCustomPages) {
-        db.custom_pages[cp.slug] = cp;
+        await setDoc('custom_pages', cp.slug, cp);
       }
     }
 
     // 4. Sync Sub Partners
     if (Array.isArray(stateSubPartners)) {
-      db.sub_partners = {};
       for (const sp of stateSubPartners) {
-        db.sub_partners[sp.id] = sp;
+        await setDoc('sub_partners', sp.id, sp);
       }
     }
 
-    await writeDataFile(db);
-    logger.info("Successfully synced all in-memory state to JSON database.");
+    logger.info("Successfully synced all in-memory state to Firebase Firestore database.");
   } catch (e) {
     logger.error("saveState error:", e);
   }

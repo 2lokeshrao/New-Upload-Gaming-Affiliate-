@@ -17,6 +17,8 @@ import { AppSkeleton } from './components/Skeletons';
 import { ToastNotification } from './components/ToastNotification';
 
 import { useLanguage } from './i18n/LanguageContext';
+import { ScrollToTop } from './components/ScrollToTop';
+
 import { formatLocalizedBonus } from './utils/currency';
 
 import { Language } from './i18n/translations';
@@ -542,7 +544,8 @@ export default function App() {
   if (customPageMatch) {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Navbar platforms={activePlatforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
         <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><CustomPageView page={customPageMatch} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
@@ -565,7 +568,8 @@ export default function App() {
   if (currentPath === '/articles') {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={activePlatforms} config={config} /></Suspense>
         <Footer
           platforms={activePlatforms}
@@ -586,7 +590,8 @@ export default function App() {
   if (currentPath === '/articles') {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={activePlatforms} config={config} /></Suspense>
         <Footer
           platforms={activePlatforms}
@@ -606,7 +611,8 @@ export default function App() {
   if (currentPath.startsWith('/brands/')) {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Navbar platforms={activePlatforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
         <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><BrandArticlePage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} onClaimClick={handleClaimClick} /></Suspense>
         <Footer
@@ -628,7 +634,8 @@ export default function App() {
   if (currentPath.startsWith('/banking') || currentPath.startsWith('/loans') || currentPath.startsWith('/finance') || currentPath.startsWith('/payments/credit-card')) {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Suspense fallback={<div className="min-h-screen pt-24 text-center text-emerald-500">Loading Financial Hub...</div>}><FinancialHubPage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
           platforms={activePlatforms}
@@ -648,7 +655,8 @@ export default function App() {
   if (currentPath.startsWith('/wallets/') || currentPath.startsWith('/crypto/') || currentPath.startsWith('/payments/')) {
     return (
       <>
-        <TopLoadingBar isLoading={isNavigating} />
+        <ScrollToTop />
+      <TopLoadingBar isLoading={isNavigating} />
         <Suspense fallback={<div className="min-h-screen pt-24 text-center text-amber-500">Loading Wallet Data...</div>}><WalletArticlePage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
           platforms={activePlatforms}
@@ -667,6 +675,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans antialiased selection:bg-amber-400 selection:text-slate-950">
+      <ScrollToTop />
       <TopLoadingBar isLoading={isNavigating} />
       {/* Sticky Header Navigation */}
       <header className="sticky top-0 z-[100] flex flex-col bg-slate-950/95 backdrop-blur-md shadow-lg">

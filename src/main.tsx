@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { BrowserRouter } from 'react-router-dom';
 // Initialize Sentry dynamically to avoid blocking main thread
 if (import.meta.env.VITE_SENTRY_DSN) {
   import('@sentry/react').then((Sentry) => {
@@ -66,7 +67,9 @@ if (typeof window !== 'undefined') {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LanguageProvider>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </LanguageProvider>
   </StrictMode>,
 );
