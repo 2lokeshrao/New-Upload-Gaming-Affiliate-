@@ -139,7 +139,6 @@ async function getMysqlPool() {
     return mysqlPool;
   } catch (err: any) {
     mysqlConnectionFailed = true;
-    logger.warn('MySQL connection failed, falling back to JSON local storage only. Error: ' + err.message);
     return null;
   }
 }

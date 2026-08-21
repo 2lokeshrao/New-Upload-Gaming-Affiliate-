@@ -275,7 +275,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </header>
 
       {/* Admin Content Area */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 pb-3 sm:pb-6 pt-4 sm:pt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative items-start content-start">
         {/* Mobile Navigation Drawer Backdrop & Modal (shows when hamburger is clicked) */}
         {isMobileMenuOpen && (
           <>
