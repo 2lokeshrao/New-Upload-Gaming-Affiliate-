@@ -265,9 +265,29 @@ export default function App() {
     }
   };
 
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [adminToken]);
+
+  // Live data polling for Admin
+  useEffect(() => {
+    let interval;
+    if (viewingAdmin && adminToken) {
+      interval = setInterval(() => {
+        fetch('/api/admin/data', { headers: { Authorization: `Bearer ${adminToken}` } })
+          .then(res => res.json())
+          .then(data => {
+            if (data.stats) setStats(data.stats);
+            if (data.logs) setLogs(data.logs);
+            if (data.subPartners) setSubPartners(data.subPartners);
+          })
+          .catch(err => console.error("Live data error", err));
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [viewingAdmin, adminToken]);
+
 
   // Inject dynamic FAQ Schema.org JSON-LD into head for SEO crawlers
   useEffect(() => {

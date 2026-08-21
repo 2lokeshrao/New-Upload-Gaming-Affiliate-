@@ -1274,6 +1274,11 @@ async function startServer() {
     });
 
     app.get('*', (req, res) => {
+      // Track visits properly for SSR
+      if (!req.path.startsWith('/api/') && !req.path.startsWith('/assets/')) {
+        stateStats.totalVisits += 1; 
+        triggerStatsSave();
+      }
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
