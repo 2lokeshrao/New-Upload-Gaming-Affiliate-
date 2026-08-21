@@ -705,7 +705,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div>
                       <label className="block text-slate-400 font-bold mb-1">Raw Affiliate Redirect URL</label>
                       <input
-                        type="url"
+                        type="text"
                         
                         value={editingPlatform.rawAffiliateUrl || ''}
                         onChange={e => setEditingPlatform({ ...editingPlatform, rawAffiliateUrl: e.target.value })}
@@ -717,7 +717,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div>
                       <label className="block text-amber-400 font-bold mb-1">Master Partner Panel Sign-Up Link</label>
                       <input
-                        type="url"
+                        type="text"
                         value={editingPlatform.masterPartnerUrl || ''}
                         onChange={e => setEditingPlatform({ ...editingPlatform, masterPartnerUrl: e.target.value })}
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white font-medium focus:border-purple-500 outline-none"
@@ -728,7 +728,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div>
                       <label className="block text-slate-400 font-bold mb-1">Logo Image URL</label>
                       <input
-                        type="url"
+                        type="text"
                         
                         value={editingPlatform.logoUrl || ''}
                         onChange={e => setEditingPlatform({ ...editingPlatform, logoUrl: e.target.value })}
@@ -1205,7 +1205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">Logo Image URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.exitIntentConfig?.customLogoUrl || ''}
                           onChange={e => {
                             const updated = { ...(localConfig.exitIntentConfig || {}), customLogoUrl: e.target.value };
@@ -1221,7 +1221,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           Referral / Affiliate Link (Target URL)
                         </label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.exitIntentConfig?.customAffiliateUrl || ''}
                           onChange={e => {
                             const updated = { ...(localConfig.exitIntentConfig || {}), customAffiliateUrl: e.target.value };
@@ -1318,7 +1318,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">Telegram Channel URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.telegramUrl || ''}
                           onChange={e => setLocalConfig({ ...localConfig, telegramUrl: e.target.value })}
                           placeholder="https://t.me/YourOfficialChannel"
@@ -1329,7 +1329,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">WhatsApp Group URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.whatsappGroupUrl || ''}
                           onChange={e => setLocalConfig({ ...localConfig, whatsappGroupUrl: e.target.value })}
                           placeholder="https://chat.whatsapp.com/YourGroup"
@@ -1340,7 +1340,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">Instagram Page URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.instagramUrl || ''}
                           onChange={e => setLocalConfig({ ...localConfig, instagramUrl: e.target.value })}
                           placeholder="https://instagram.com/your_page"
@@ -1351,7 +1351,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">TikTok Channel URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.tiktokUrl || ''}
                           onChange={e => setLocalConfig({ ...localConfig, tiktokUrl: e.target.value })}
                           placeholder="https://tiktok.com/@your_handle"
@@ -1362,7 +1362,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div>
                         <label className="block text-slate-300 font-bold mb-1">YouTube Channel URL</label>
                         <input
-                          type="url"
+                          type="text"
                           value={localConfig.youtubeUrl || ''}
                           onChange={e => setLocalConfig({ ...localConfig, youtubeUrl: e.target.value })}
                           placeholder="https://youtube.com/@your_channel"

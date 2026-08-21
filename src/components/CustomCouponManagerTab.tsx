@@ -164,7 +164,7 @@ export const CustomCouponManagerTab: React.FC<CustomCouponManagerTabProps> = ({ 
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-300 mb-1">Registration Target URL (Affiliate / Landing Page Link)</label>
               <input
-                type="url"
+                type="text"
                 required
                 value={editingCoupon.targetUrl || ''}
                 onChange={e => setEditingCoupon({ ...editingCoupon, targetUrl: e.target.value })}

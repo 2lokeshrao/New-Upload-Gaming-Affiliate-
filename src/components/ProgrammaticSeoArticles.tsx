@@ -119,7 +119,7 @@ export const ProgrammaticSeoArticles: React.FC<ProgrammaticSeoArticlesProps> = (
                     <div key={`slide-${platform.id}`} className="w-full flex-shrink-0 p-5 sm:p-8">
                       {/* Header */}
                       <div className="flex items-center gap-4 mb-6">
-                        <img width="40" height="40" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} loading="lazy" src={platform.logoUrl} alt={`${platform.name} logo`} className="w-12 h-12 rounded-full border-2 border-slate-800 bg-slate-950 object-cover shadow-lg" />
+                        <img width="40" height="40" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} loading="lazy" src={platform.logoUrl || undefined} alt={`${platform.name} logo`} className="w-12 h-12 rounded-full border-2 border-slate-800 bg-slate-950 object-cover shadow-lg" />
                         <div>
                           <h3 className="text-lg sm:text-xl font-black text-white">{platform.name} Review & Promo Guide</h3>
                           <p className="text-xs text-emerald-400 font-bold flex items-center gap-1 mt-0.5">

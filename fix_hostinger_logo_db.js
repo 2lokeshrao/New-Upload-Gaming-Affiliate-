@@ -13,12 +13,14 @@ fetch('http://localhost:3000/api/admin/login', {
   
   const hostinger = platforms.find(p => p.id === 'hostinger');
   if (hostinger) {
-    hostinger.logoUrl = '/logos/hostinger.png';
+    hostinger.logoUrl = '/hostinger_logo_new.svg';
     await fetch('http://localhost:3000/api/admin/platforms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ platforms })
     });
-    console.log('Hostinger logo updated to /logos/hostinger.png in DB!');
+    console.log('Hostinger logo updated in DB to /hostinger_logo_new.svg');
+  } else {
+    console.log('Hostinger not found');
   }
 }).catch(console.error);

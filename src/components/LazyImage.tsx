@@ -18,7 +18,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({ src, alt, className = '', 
       <img 
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
-        src={src}
+        src={src || undefined}
         alt={alt}
         decoding={priority ? "sync" : "async"}
         onLoad={() => setIsLoaded(true)}

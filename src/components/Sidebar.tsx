@@ -50,7 +50,7 @@ export const Sidebar: React.FC<{
                   onClick={(e) => handleNav(e, url)}
                   className="group flex items-center gap-3 p-2 hover:bg-slate-800 rounded-lg transition-colors"
                 >
-                  <img width="40" height="40" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} loading="lazy" src={p.logoUrl} alt={p.name} className="w-10 h-10 rounded-full border-2 border-slate-700 object-cover" />
+                  <img width="40" height="40" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} loading="lazy" src={p.logoUrl || undefined} alt={p.name} className="w-10 h-10 rounded-full border-2 border-slate-700 object-cover" />
                   <div className="flex-1">
                     <h4 className="text-slate-200 font-bold text-sm group-hover:text-amber-400 transition-colors">{p.name}</h4>
                     <p className="text-xs text-emerald-400 font-bold">{p.bonusText || p.bonusTitle}</p>
