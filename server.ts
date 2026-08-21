@@ -108,13 +108,15 @@ let stateTrackLogs: TrackLog[] = [];
 let DATA_FILE = path.join(process.cwd(), 'app_data.json');
 
 let mysqlPool: any = null;
+let mysqlConnectionFailed = false;
 
 async function getMysqlPool() {
   if (mysqlPool) return mysqlPool;
+  if (mysqlConnectionFailed) return null;
   if (!process.env.DB_HOST || !process.env.DB_USER) return null;
   
   try {
-    mysqlPool = mysql.createPool({
+    const tempPool = mysql.createPool({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD || '',
@@ -124,7 +126,7 @@ async function getMysqlPool() {
       queueLimit: 0
     });
     
-    await mysqlPool.query(`
+    await tempPool.query(`
       CREATE TABLE IF NOT EXISTS mysql_state_store (
         id INT NOT NULL DEFAULT 1,
         state_json LONGTEXT NOT NULL,
@@ -133,9 +135,11 @@ async function getMysqlPool() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     
+    mysqlPool = tempPool;
     return mysqlPool;
-  } catch (err) {
-    logger.error('MySQL connection failed', err);
+  } catch (err: any) {
+    mysqlConnectionFailed = true;
+    logger.warn('MySQL connection failed, falling back to JSON local storage only. Error: ' + err.message);
     return null;
   }
 }
@@ -147,141 +151,20 @@ async function readDataFile() {
     const pool = await getMysqlPool();
     if (!pool) throw new Error("No MySQL Pool");
 
-    // 1. Fetch Global Config
-    const [configRows] = await pool.query('SELECT * FROM global_config ORDER BY id DESC LIMIT 1');
-    if (configRows && configRows.length > 0) {
-      const gc = configRows[0];
-      db.settings.globalConfig = {
-        heroHeadline: gc.hero_headline || "Claim Your 100% Guaranteed Welcome Bonuses",
-        heroSubheading: gc.hero_subheading || "Stop Wasting Money on Unverified Sites.",
-        topBannerTemplate: gc.top_banner_template || "",
-        enableSubPartnerProgram: !!gc.enable_sub_partner_program,
-        subPartnerHeadline: gc.sub_partner_headline || "",
-        copyrightText: gc.copyright_text || "© 2026 Bonus Promo Code. All rights reserved.",
-        footerDisclaimerText: gc.footer_disclaimer_text || "",
-        telegramUrl: gc.telegram_url || "",
-        instagramUrl: gc.instagram_url || "",
-        tiktokUrl: gc.tiktok_url || "",
-        whatsappGroupUrl: gc.whatsapp_group_url || "",
-        youtubeUrl: gc.youtube_url || "",
-        articles: []
-      };
+    // Retrieve entire state from the monolithic JSON store
+    const [jsonRows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
+    if (jsonRows && jsonRows.length > 0) {
+      const fullJson = JSON.parse(jsonRows[0].state_json);
+      
+      if (fullJson.settings) db.settings = fullJson.settings;
+      if (fullJson.platforms) db.platforms = fullJson.platforms;
+      if (fullJson.custom_pages) db.custom_pages = fullJson.custom_pages;
+      if (fullJson.sub_partners) db.sub_partners = fullJson.sub_partners;
+    } else {
+      throw new Error("No state_json found in mysql_state_store");
     }
-
-    // 2. Fetch Platforms
-    const [platformRows] = await pool.query('SELECT * FROM platforms');
-    if (platformRows) {
-      for (const r of platformRows) {
-        db.platforms[r.id] = {
-          id: r.id,
-          slug: r.slug,
-          name: r.name,
-          logoUrl: r.logo_url,
-          rating: Number(r.rating) || 0,
-          starRating: r.star_rating || 5,
-          bonusText: r.bonus_text,
-          promoCode: r.promo_code,
-          rawAffiliateUrl: r.raw_affiliate_url,
-          masterPartnerUrl: r.master_partner_url,
-          claimUrl: r.claim_url,
-          reviewContent: r.review_content,
-          isFeatured: !!r.is_featured,
-          featuredRank: r.featured_rank,
-          isActive: !!r.is_active,
-          clicksCount: r.clicks_count || 0,
-          copiesCount: r.copies_count || 0,
-          category: r.category,
-          bonusTitle: r.bonus_title,
-          minDeposit: r.min_deposit,
-          metaTitle: r.meta_title,
-          metaDescription: r.meta_description,
-          metaKeywords: r.meta_keywords,
-          averageUserRating: Number(r.average_user_rating) || 0,
-          totalReviewsCount: r.total_reviews_count || 0
-        };
-      }
-    }
-
-    // 3. Fetch Custom Pages
-    const [pageRows] = await pool.query('SELECT * FROM custom_pages');
-    if (pageRows) {
-      for (const r of pageRows) {
-        db.custom_pages[r.slug] = {
-          id: r.id,
-          slug: r.slug,
-          title: r.title,
-          content: r.content,
-          isActive: !!r.is_active
-        };
-      }
-    }
-
-    // 4. Fetch Sub Partners
-    const [subRows] = await pool.query('SELECT * FROM sub_partners');
-    if (subRows) {
-      for (const r of subRows) {
-        db.sub_partners[r.id] = {
-          id: r.id,
-          fullName: r.full_name,
-          email: r.email,
-          whatsapp: r.whatsapp,
-          platformId: r.platform_id,
-          platformName: r.platform_name,
-          trafficSource: r.traffic_source,
-          estimatedMonthlyPlayers: r.estimated_monthly_players,
-          status: r.status,
-          appliedAt: r.applied_at ? new Date(r.applied_at).toISOString() : new Date().toISOString()
-        };
-      }
-    }
-
-    // 5. Fetch Articles
-    const [articleRows] = await pool.query('SELECT * FROM articles');
-    let articlesData = [];
-    if (articleRows) {
-      articlesData = articleRows.map(r => ({
-        id: r.id,
-        slug: r.slug,
-        title: r.title,
-        content: r.content,
-        category: r.category,
-        platformId: r.platform_id || undefined,
-        platformName: r.platform_name || undefined,
-        metaTitle: r.meta_title,
-        metaDescription: r.meta_description,
-        coverImage: r.cover_image || undefined,
-        author: r.author || 'Admin',
-        views: r.views || 0,
-        status: r.status || 'published',
-        publishedAt: r.published_at ? new Date(r.published_at).toISOString() : new Date().toISOString(),
-        tags: []
-      }));
-    }
-
-    // 6. Merge with JSON state (for complex fields like customCoupons, trackingPixels that aren't relational)
-    try {
-      const [jsonRows] = await pool.query('SELECT state_json FROM mysql_state_store WHERE id = 1');
-      if (jsonRows && jsonRows.length > 0) {
-        const fullJson = JSON.parse(jsonRows[0].state_json);
-        
-        // Map complex settings
-        if (fullJson.settings && fullJson.settings.globalConfig) {
-          db.settings.globalConfig = { ...fullJson.settings.globalConfig, ...db.settings.globalConfig };
-        }
-        db.settings.globalConfig.articles = articlesData; // Force override with relational data
-
-        // Only use JSON platforms/pages if relational is completely empty
-        if (Object.keys(db.platforms).length === 0 && fullJson.platforms) {
-          db.platforms = fullJson.platforms;
-        }
-        if (Object.keys(db.custom_pages).length === 0 && fullJson.custom_pages) {
-          db.custom_pages = fullJson.custom_pages;
-        }
-      }
-    } catch(e) {}
-
   } catch(e) {
-    // Fallback to local flat file if no MySQL
+    // Fallback to local flat file if MySQL fails or is empty
     try {
       let fileToRead = DATA_FILE;
       if (!fs.existsSync(fileToRead) && fs.existsSync('/tmp/app_data.json')) {
@@ -301,8 +184,8 @@ async function readDataFile() {
     }
   }
 
-  // Seed Initial Data if Tables are Empty
-  if (Object.keys(db.platforms).length === 0) {
+  // Seed Initial Data if Tables/JSON are Empty
+  if (Object.keys(db.platforms).length === 0) { 
      db.platforms = {};
      for (const p of initialPlatforms) db.platforms[p.id] = p;
      db.settings.globalConfig = initialGlobalConfig;
