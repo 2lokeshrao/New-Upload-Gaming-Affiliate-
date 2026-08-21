@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { CustomPage, GamingPlatform, GlobalConfig, AIArticle } from '../types';
-import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift } from 'lucide-react';
+import { ChevronRight, HelpCircle, ChevronDown, Gamepad2, Gift, Globe } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { AffiliateLinkCard } from './AffiliateLinkCard';
 import { injectSeoTags } from '../utils/seo';

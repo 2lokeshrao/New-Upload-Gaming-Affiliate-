@@ -57,6 +57,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'partnerapi' | 'platforms' | 'config' | 'coupons' | 'analytics' | 'subpartners' | 'seo' | 'feedback' | 'pixels' | 'sitemap' | 'push' | 'abtest' | 'pages' | 'articles' | 'footer' | 'faqs'>('dashboard');
 
+  const navTabs: {
+    id: typeof activeTab;
+    label: string;
+    icon: React.ElementType;
+    iconColor?: string;
+    badge?: string;
+    badgeCount?: number;
+    isSpecial?: boolean;
+  }[] = [
+    { id: 'dashboard', label: 'Partner Earnings Dashboard', icon: LayoutDashboard, badge: 'LIVE', isSpecial: true },
+    { id: 'partnerapi', label: 'Partner API Integrations', icon: Key, iconColor: 'text-amber-400' },
+    { id: 'platforms', label: `Manage Platforms (${platforms.length})`, icon: Gamepad2, iconColor: 'text-purple-400' },
+    { id: 'config', label: 'Global Page Elements', icon: Settings, iconColor: 'text-slate-400' },
+    { id: 'pages', label: `Custom Pages (${customPages?.length || 0})`, icon: FileText, iconColor: 'text-amber-400' },
+    { id: 'articles', label: 'AI Auto-Blogger', icon: Sparkles, iconColor: 'text-emerald-400' },
+    { id: 'footer', label: 'Footer & Links Manager', icon: Menu, iconColor: 'text-cyan-400' },
+    { id: 'faqs', label: 'FAQs Manager', icon: HelpCircle, iconColor: 'text-purple-400' },
+    { id: 'subpartners', label: 'Sub-Partner Requests', icon: Users, iconColor: 'text-amber-400', badgeCount: subPartners?.length },
+    { id: 'coupons', label: 'Custom Coupon Manager', icon: Ticket, iconColor: 'text-amber-400' },
+    { id: 'analytics', label: 'Analytics & Click Counter', icon: BarChart2, iconColor: 'text-cyan-400' },
+    { id: 'seo', label: 'SEO Content Manager & Health', icon: Search, iconColor: 'text-emerald-400' },
+    { id: 'feedback', label: 'Feedback Approval Queue', icon: MessageSquare, iconColor: 'text-amber-400', badgeCount: (config.approvedFeedbacks?.filter(f => !f.isApproved)?.length || 0) },
+    { id: 'pixels', label: 'Tracking Pixel Manager', icon: Target, iconColor: 'text-cyan-400' },
+    { id: 'sitemap', label: 'Automated Sitemap Generator', icon: Globe, iconColor: 'text-purple-400' },
+    { id: 'push', label: 'FCM Push Notification Broadcast', icon: Bell, iconColor: 'text-amber-400' },
+    { id: 'abtest', label: 'A/B Testing Dashboard', icon: Sliders, iconColor: 'text-emerald-400' },
+  ];
+
   // CMS state
   const [pagesList, setPagesList] = useState<CustomPage[]>(customPages || []);
 
@@ -248,401 +276,156 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* Admin Content Area */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
-        {/* Mobile Navigation Sidebar Drawer (shows when hamburger is clicked) */}
+        {/* Mobile Navigation Drawer Backdrop & Modal (shows when hamburger is clicked) */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2 shadow-2xl animate-fade-in z-20">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
-              <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Navigation Tabs</span>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-slate-400 hover:text-white text-xs p-1"
-              >
-                ✕ Close Menu
-              </button>
+          <>
+            <div
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-slate-900 border-r border-slate-800 p-4 shadow-2xl z-50 flex flex-col lg:hidden animate-fade-in">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center font-black text-white shadow-md shrink-0">
+                    <Lock className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-white uppercase tracking-wider block">Admin Control</span>
+                    <span className="text-[10px] text-amber-400 font-mono">{navTabs.length} Navigation Tabs</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+                {navTabs.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between cursor-pointer transition-all ${
+                        isActive
+                          ? tab.isSpecial
+                            ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20'
+                            : 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                          : tab.isSpecial
+                          ? 'bg-slate-950 text-amber-300 border border-amber-500/30 hover:bg-slate-800'
+                          : 'bg-slate-950/70 text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon className={`w-4 h-4 shrink-0 ${tab.iconColor || (isActive ? 'text-white' : 'text-slate-400')}`} />
+                        <span className="truncate">{tab.label}</span>
+                      </div>
+                      {tab.badge && (
+                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${
+                          isActive ? 'bg-slate-950 text-amber-400' : 'bg-amber-500/20 text-amber-300'
+                        }`}>
+                          {tab.badge}
+                        </span>
+                      )}
+                      {typeof tab.badgeCount === 'number' && tab.badgeCount > 0 && (
+                        <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full shrink-0">
+                          {tab.badgeCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-
-            <button
-              onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-3 rounded-xl font-black text-xs flex items-center justify-between cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-amber-500 text-slate-950 font-black'
-                  : 'bg-slate-950 text-amber-300 border border-amber-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Partner Earnings Dashboard</span>
-              </div>
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-slate-900 text-amber-400">LIVE</span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('partnerapi'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'partnerapi' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Key className="w-4 h-4 text-amber-400" />
-              <span>Partner API Integration Settings</span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('platforms'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'platforms' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Gamepad2 className="w-4 h-4" />
-              <span>Manage Platforms ({platforms.length})</span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('config'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'config' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Global Page Elements</span>
-            </button>
-                            <button 
-              onClick={() => setActiveTab('pages')}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between cursor-pointer ${
-                activeTab === 'pages' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-amber-400" />
-                <span>Custom Pages</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('articles'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-3 transition-all ${
-                activeTab === 'articles' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              } hover:bg-slate-800`}
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                <span>AI Auto-Blogger</span>
-              </div>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('footer'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-3 transition-all ${
-                activeTab === 'footer' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              } hover:bg-slate-800`}
-            >
-              <div className="flex items-center gap-2">
-                <Menu className="w-4 h-4 text-cyan-400" />
-                <span>Footer & Links Manager</span>
-              </div>
-            </button>
-            <button
-              onClick={() => { setActiveTab('faqs'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-3 transition-all ${
-                activeTab === 'faqs' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              } hover:bg-slate-800`}
-            >
-              <div className="flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-purple-400" />
-                <span>FAQs Manager</span>
-              </div>
-            </button>
-
-
-            <button 
-              onClick={() => { setActiveTab('subpartners'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-between cursor-pointer ${
-                activeTab === 'subpartners' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-amber-400" />
-                <span>Sub-Partner Requests</span>
-              </div>
-              {subPartners && subPartners.length > 0 && (
-                <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full">
-                  {subPartners.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('coupons'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'coupons' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Ticket className="w-4 h-4 text-amber-400" />
-              <span>Custom Coupon Manager</span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('analytics'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'analytics' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <BarChart2 className="w-4 h-4" />
-              <span>Analytics & Click Counter</span>
-            </button>
-
-            <button
-              onClick={() => { setActiveTab('seo'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'seo' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Search className="w-4 h-4 text-emerald-400" />
-              <span>SEO Content Manager</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('seo'); setIsMobileMenuOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer ${
-                activeTab === 'seo' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-300'
-              }`}
-            >
-              <Activity className="w-4 h-4 text-blue-400" />
-              <span>SEO Health Limits</span>
-            </button>
-
-          </div>
+          </>
         )}
+
+        {/* Mobile & Tablet Top Horizontal Quick Switcher */}
+        <div className="lg:hidden col-span-1 -mb-2">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider truncate mr-2">
+              Tab: <span className="text-amber-400 font-black">{navTabs.find(t => t.id === activeTab)?.label}</span>
+            </span>
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="shrink-0 text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 cursor-pointer"
+            >
+              <Menu className="w-3.5 h-3.5" />
+              <span>All Tabs ({navTabs.length})</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-800">
+            {navTabs.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                      : 'bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${tab.iconColor || ''}`} />
+                  <span className="whitespace-nowrap">{tab.label}</span>
+                  {typeof tab.badgeCount === 'number' && tab.badgeCount > 0 && (
+                    <span className="bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full">
+                      {tab.badgeCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Desktop Sidebar Nav */}
         <div className="hidden lg:block lg:col-span-3 space-y-2">
-          {/* TAB 0: EXECUTIVE REVENUE & REGISTRATION DASHBOARD */}
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full text-left px-4 py-3.5 rounded-2xl font-black text-sm flex items-center justify-between cursor-pointer transition-all ${
-              activeTab === 'dashboard'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/30 scale-[1.02]'
-                : 'bg-slate-900 border border-amber-500/30 text-amber-300 hover:bg-slate-800 hover:text-amber-200'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Partner Earnings Dashboard</span>
-            </div>
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${activeTab === 'dashboard' ? 'bg-slate-950 text-amber-400' : 'bg-amber-500/20 text-amber-300'}`}>
-              LIVE
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('partnerapi')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'partnerapi'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Key className="w-5 h-5 text-amber-400" />
-            <span>Partner API Integrations</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('platforms')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'platforms'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Gamepad2 className="w-5 h-5" />
-            <span>Manage Platforms ({platforms.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('config')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'config'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-            <span>Global Page Elements</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('pages')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-between cursor-pointer transition-colors ${
-              activeTab === 'pages'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5" />
-              <span>Custom Pages</span>
-            </div>
-          </button>
-          <button 
-            onClick={() => setActiveTab('subpartners')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-between cursor-pointer transition-colors ${
-              activeTab === 'subpartners'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-amber-400" />
-              <span>Sub-Partner Requests</span>
-            </div>
-            {subPartners && subPartners.length > 0 && (
-              <span className="bg-amber-500 text-slate-950 font-black text-xs px-2 py-0.5 rounded-full">
-                {subPartners.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('coupons')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'coupons'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Ticket className="w-5 h-5 text-amber-400" />
-            <span>Custom Coupon Manager</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'analytics'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <BarChart2 className="w-5 h-5" />
-            <span>Analytics & Click Counter</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('articles')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'articles'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Sparkles className="w-5 h-5 text-emerald-400" />
-            <span>AI Auto-Blogger</span>
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('footer')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'footer'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Menu className="w-5 h-5 text-cyan-400" />
-            <span>Footer & Links Manager</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('faqs')}
-              className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-all ${
-                activeTab === 'faqs'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <HelpCircle className="w-5 h-5 text-purple-400" />
-              <span>FAQs Manager</span>
-            </button>
-
-
-          <button
-            onClick={() => setActiveTab('seo')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'seo'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Search className="w-5 h-5 text-emerald-400" />
-            <span>SEO Content Manager</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('seo')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'seo'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Activity className="w-5 h-5 text-blue-400" />
-            <span>SEO Health Limits</span>
-          </button>
-
-
-          <button
-            onClick={() => setActiveTab('feedback')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'feedback'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <MessageSquare className="w-5 h-5 text-amber-400" />
-            <span>Feedback Approval Queue</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('pixels')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'pixels'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Target className="w-5 h-5 text-cyan-400" />
-            <span>Tracking Pixel Manager</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('sitemap')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'sitemap'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Globe className="w-5 h-5 text-purple-400" />
-            <span>Automated Sitemap Generator</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('push')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'push'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Bell className="w-5 h-5 text-amber-400" />
-            <span>FCM Push Notification Broadcast</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('abtest')}
-            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 cursor-pointer transition-colors ${
-              activeTab === 'abtest'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <Sliders className="w-5 h-5 text-emerald-400" />
-            <span>A/B Testing Dashboard</span>
-          </button>
+          {navTabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-between cursor-pointer transition-all ${
+                  isActive
+                    ? tab.isSpecial
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/30 scale-[1.02] font-black'
+                      : 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                    : tab.isSpecial
+                    ? 'bg-slate-900 border border-amber-500/30 text-amber-300 hover:bg-slate-800 hover:text-amber-200'
+                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-5 h-5 ${tab.iconColor || ''}`} />
+                  <span>{tab.label}</span>
+                </div>
+                {tab.badge && (
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+                    isActive ? 'bg-slate-950 text-amber-400' : 'bg-amber-500/20 text-amber-300'
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
+                {typeof tab.badgeCount === 'number' && tab.badgeCount > 0 && (
+                  <span className="bg-amber-500 text-slate-950 font-black text-xs px-2 py-0.5 rounded-full">
+                    {tab.badgeCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Main Tab Content */}
