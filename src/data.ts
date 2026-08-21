@@ -258,7 +258,7 @@ export const initialPlatforms: GamingPlatform[] = [
     id: "hostinger",
     slug: "hostinger",
     name: "Hostinger",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Hostinger_logo.svg/2560px-Hostinger_logo.svg.png",
+    logoUrl: "/hostinger_icon_only.webp",
     rating: 9.8,
     starRating: 5,
     averageUserRating: 4.9,

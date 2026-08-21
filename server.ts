@@ -321,7 +321,7 @@ app.get('/api/cdn/images/:platformId.webp', async (req, res) => {
       const base64Data = platform.logoUrl.split(',')[1];
       buffer = Buffer.from(base64Data, 'base64');
     } else {
-      const response = await fetch(platform.logoUrl);
+      let fetchUrl = platform.logoUrl; if (fetchUrl.startsWith("/")) { fetchUrl = `http://127.0.0.1:${PORT}${fetchUrl}`; } const response = await fetch(fetchUrl);
       if (!response.ok) throw new Error('Failed to fetch external image');
       const arrayBuffer = await response.arrayBuffer();
       buffer = Buffer.from(arrayBuffer);
