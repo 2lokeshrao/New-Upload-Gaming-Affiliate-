@@ -1,4 +1,4 @@
-import './instrument';
+
 import DOMPurify from 'isomorphic-dompurify';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
