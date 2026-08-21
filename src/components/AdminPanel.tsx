@@ -618,7 +618,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div>
                           <span className="font-extrabold text-amber-400 block sm:inline mr-2">Postback Webhook URL:</span>
-                          <code className="text-sky-300 font-mono break-all">{`https://yourdomain.com/api/postback?platform=${platform.id}&key=${currentPanel.postbackKey || 'TOKEN'}`}</code>
+                          <code className="text-sky-300 font-mono break-all">{`https://yourdomain.com/api/postback/${platform.id}?key=${currentPanel.postbackKey || 'TOKEN'}`}</code>
                         </div>
                         <span className="text-[10px] text-emerald-400 font-extrabold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 shrink-0">
                           Auto-Sync Ready

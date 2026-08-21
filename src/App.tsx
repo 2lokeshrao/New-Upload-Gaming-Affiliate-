@@ -526,6 +526,7 @@ export default function App() {
 
   
   // Custom Page Routing
+  const activePlatforms = platforms.filter(p => p.isActive !== false);
 
   const customPageMatch = customPages.find(p => currentPath === `/${p.slug}`);
   const articleMatch = config?.articles?.find(a => currentPath === `/blog/${a.slug}`);
@@ -533,7 +534,7 @@ export default function App() {
   if (articleMatch) {
     return (
       <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-amber-400">Loading Article...</div>}>
-        <AiArticleView article={articleMatch} platforms={platforms} customPages={customPages} config={config!} geo={geo} onClaimClick={handleClaimClick} />
+        <AiArticleView article={articleMatch} platforms={activePlatforms} customPages={customPages} config={config!} geo={geo} onClaimClick={handleClaimClick} />
       </Suspense>
     );
   }
@@ -542,10 +543,10 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Navbar platforms={platforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
-        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><CustomPageView page={customPageMatch} platforms={platforms} customPages={customPages} config={config} /></Suspense>
+        <Navbar platforms={activePlatforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><CustomPageView page={customPageMatch} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -565,9 +566,9 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={platforms} config={config} /></Suspense>
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={activePlatforms} config={config} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -586,9 +587,9 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={platforms} config={config} /></Suspense>
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><ArticlesHubPage customPages={customPages} platforms={activePlatforms} config={config} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -606,10 +607,10 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Navbar platforms={platforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
-        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><BrandArticlePage path={currentPath} geo={geo} platforms={platforms} customPages={customPages} config={config} onClaimClick={handleClaimClick} /></Suspense>
+        <Navbar platforms={activePlatforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
+        <Suspense fallback={<div className="min-h-screen pt-24"><AppSkeleton /></div>}><BrandArticlePage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} onClaimClick={handleClaimClick} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -628,9 +629,9 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Suspense fallback={<div className="min-h-screen pt-24 text-center text-emerald-500">Loading Financial Hub...</div>}><FinancialHubPage path={currentPath} geo={geo} platforms={platforms} customPages={customPages} config={config} /></Suspense>
+        <Suspense fallback={<div className="min-h-screen pt-24 text-center text-emerald-500">Loading Financial Hub...</div>}><FinancialHubPage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -648,9 +649,9 @@ export default function App() {
     return (
       <>
         <TopLoadingBar isLoading={isNavigating} />
-        <Suspense fallback={<div className="min-h-screen pt-24 text-center text-amber-500">Loading Wallet Data...</div>}><WalletArticlePage path={currentPath} geo={geo} platforms={platforms} customPages={customPages} config={config} /></Suspense>
+        <Suspense fallback={<div className="min-h-screen pt-24 text-center text-amber-500">Loading Wallet Data...</div>}><WalletArticlePage path={currentPath} geo={geo} platforms={activePlatforms} customPages={customPages} config={config} /></Suspense>
         <Footer
-          platforms={platforms}
+          platforms={activePlatforms}
           customPages={customPages}
           geo={geo}
           config={config}
@@ -669,7 +670,7 @@ export default function App() {
       <TopLoadingBar isLoading={isNavigating} />
       {/* Sticky Header Navigation */}
       <header className="sticky top-0 z-[100] flex flex-col bg-slate-950/95 backdrop-blur-md shadow-lg">
-        <Navbar platforms={platforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
+        <Navbar platforms={activePlatforms} customPages={customPages} geo={geo} onOpenAppModal={() => setShowPwaModal(true)} />
       </header>
 
       <div className="flex flex-col border-b border-slate-800 bg-slate-950">
@@ -691,7 +692,7 @@ export default function App() {
 
         {/* 3. Top 3 Featured Carousel / Cards */}
         <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>}><TopThreeCarousel
-          platforms={platforms}
+          platforms={activePlatforms}
           onClaimClick={handleClaimClick}
           onCopyCode={handleCopyCode}
           onOpenQrModal={(p) => setSelectedQrPlatform(p)}
@@ -725,7 +726,7 @@ export default function App() {
 
           {/* 5. Complete Offers Directory */}
           <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div></div>}><OfferGrid
-            platforms={platforms}
+            platforms={activePlatforms}
             onClaimClick={handleClaimClick}
             onCopyCode={handleCopyCode}
             onSubPartnerClick={() => setShowSubPartnerModal(true)}
@@ -735,14 +736,14 @@ export default function App() {
 
           {/* 6. SEO Article & Keyword Index Table */}
           <ProgrammaticSeoArticles
-            platforms={platforms}
+            platforms={activePlatforms}
             geo={geo}
             onClaimClick={handleClaimClick}
           />
 
           {/* Original Table */}
           <SeoContentSection geo={geo}
-            platforms={platforms}
+            platforms={activePlatforms}
             customCoupons={config.customCoupons || []}
             onClaimClick={handleClaimClick}
           />
@@ -757,7 +758,7 @@ export default function App() {
 
       {/* Footer */}
       <Footer
-        platforms={platforms}
+        platforms={activePlatforms}
         customPages={customPages}
         geo={geo}
         config={config}
@@ -773,7 +774,7 @@ export default function App() {
 
         {showSubPartnerModal && (
           <SubPartnerModal
-            platforms={platforms}
+            platforms={activePlatforms}
             onClose={() => setShowSubPartnerModal(false)}
             onSubmitApplication={handleSubmitSubPartner}
           />
