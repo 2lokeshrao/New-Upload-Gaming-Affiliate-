@@ -12,7 +12,8 @@ export default defineConfig(() => {
       },
     },
     build: {
-      emptyOutDir: false,
+      outDir: 'dist',
+      emptyOutDir: true,
       minify: 'terser' as const,
       terserOptions: {
         compress: {
