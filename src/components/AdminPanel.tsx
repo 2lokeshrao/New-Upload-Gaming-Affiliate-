@@ -476,11 +476,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     syncEnabled: true,
                     lastSyncedAt: new Date().toISOString(),
                     stats: {
-                      totalRegistrations: 340,
-                      ftdCount: 210,
-                      totalDepositsAmount: 12500,
-                      netGamingRevenue: 9375,
-                      commissionEarned: 4218,
+                      totalRegistrations: stats?.platformStats?.[platform.id]?.registrations || 0,
+                      ftdCount: stats?.platformStats?.[platform.id]?.deposits || 0,
+                      totalDepositsAmount: 0,
+                      netGamingRevenue: 0,
+                      commissionEarned: stats?.platformStats?.[platform.id]?.revenue || 0,
                       revSharePercent: 45
                     }
                   };

@@ -563,7 +563,24 @@ app.get('/api/postback/:platform', async (req, res) => {
     await setDoc('s2s_postbacks', Date.now().toString(), postbackData);
 logger.info(`Saved S2S postback for ${reqPlatform} to MySQL.`);
     
+
+    // Aggregation for S2S Postbacks
+    if (!stateStats.platformStats) stateStats.platformStats = {};
+    if (!stateStats.platformStats[platform.id]) {
+      stateStats.platformStats[platform.id] = { clicks: 0, copies: 0, registrations: 0, deposits: 0, revenue: 0 };
+    }
+    const pStats = stateStats.platformStats[platform.id];
+    
+    if (event === 'registration') {
+      pStats.registrations = (pStats.registrations || 0) + 1;
+    } else if (event === 'deposit' || event === 'fd_approved' || event === 'redeposit' || event === 'firstbet') {
+      pStats.deposits = (pStats.deposits || 0) + 1;
+      if (sum) pStats.revenue = (pStats.revenue || 0) + sum;
+    }
+    triggerStatsSave();
+
     // Also push to local state for temporary viewing in admin
+
     stateTrackLogs.unshift({
       id: `pb_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
       eventType: 'visit' as any,
@@ -777,10 +794,22 @@ app.post('/api/track', (req, res) => {
   const platform = statePlatforms.find(p => p.id === platformId);
 
   if (eventType === 'click') {
-    stateStats.totalClicks += 1; triggerStatsSave();
+    
+    stateStats.totalClicks += 1;
+    if (!stateStats.platformStats) stateStats.platformStats = {};
+    if (platform && !stateStats.platformStats[platform.id]) stateStats.platformStats[platform.id] = { clicks: 0, copies: 0, registrations: 0, deposits: 0, revenue: 0 };
+    if (platform) stateStats.platformStats[platform.id].clicks = (stateStats.platformStats[platform.id].clicks || 0) + 1;
+    triggerStatsSave();
+
     if (platform) platform.clicksCount = (platform.clicksCount || 0) + 1;
   } else if (eventType === 'copy') {
-    stateStats.totalPromoCopies += 1; triggerStatsSave();
+    
+    stateStats.totalPromoCopies += 1;
+    if (!stateStats.platformStats) stateStats.platformStats = {};
+    if (platform && !stateStats.platformStats[platform.id]) stateStats.platformStats[platform.id] = { clicks: 0, copies: 0, registrations: 0, deposits: 0, revenue: 0 };
+    if (platform) stateStats.platformStats[platform.id].copies = (stateStats.platformStats[platform.id].copies || 0) + 1;
+    triggerStatsSave();
+
     if (platform) platform.copiesCount = (platform.copiesCount || 0) + 1;
   }
 
@@ -829,8 +858,14 @@ app.get('/go/:slug', (req, res) => {
   }
 
   // Record click count
+  
   platform.clicksCount = (platform.clicksCount || 0) + 1;
-  stateStats.totalClicks += 1; triggerStatsSave();
+  stateStats.totalClicks += 1;
+  if (!stateStats.platformStats) stateStats.platformStats = {};
+  if (!stateStats.platformStats[platform.id]) stateStats.platformStats[platform.id] = { clicks: 0, copies: 0, registrations: 0, deposits: 0, revenue: 0 };
+  stateStats.platformStats[platform.id].clicks = (stateStats.platformStats[platform.id].clicks || 0) + 1;
+  triggerStatsSave();
+
 
   // Tracking Pixels Helper
   const fbPixelId = platform.trackingPixels?.facebookPixelId || stateConfig.globalTrackingPixels?.facebookPixelId;

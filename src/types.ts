@@ -203,7 +203,7 @@ export interface AnalyticsStats {
   totalClicks: number;
   totalPromoCopies: number;
   totalSubPartnerApps: number;
-  platformStats: Record<string, { clicks: number; copies: number }>;
+  platformStats: Record<string, { clicks: number; copies: number; registrations?: number; deposits?: number; revenue?: number }>;
   dailyTrends?: { date: string; clicks: number; conversions: number }[];
 }
 
