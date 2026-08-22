@@ -17,6 +17,7 @@ import { AppSkeleton } from './components/Skeletons';
 import { ToastNotification } from './components/ToastNotification';
 
 import { useLanguage } from './i18n/LanguageContext';
+import { LazyLoad } from "./components/LazyLoad";
 import { ScrollToTop } from './components/ScrollToTop';
 
 import { formatLocalizedBonus } from './utils/currency';
@@ -760,39 +761,39 @@ export default function App() {
           )}
 
           {/* 5. Complete Offers Directory */}
-          <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div></div>}><OfferGrid
+          <LazyLoad rootMargin="600px"><Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div></div>}><OfferGrid
             platforms={activePlatforms}
             onClaimClick={handleClaimClick}
             onCopyCode={handleCopyCode}
             onSubPartnerClick={() => setShowSubPartnerModal(true)}
             onOpenQrModal={(p) => setSelectedQrPlatform(p)}
             onOpenFeedbackModal={(p) => setSelectedFeedbackPlatform(p)}
-          /></Suspense>
+          /></Suspense></LazyLoad>
 
           {/* 6. SEO Article & Keyword Index Table */}
           
-          <Suspense fallback={<div className="min-h-40" />}>
+          <LazyLoad rootMargin="600px"><Suspense fallback={<div className="min-h-40" />}>
             <TestimonialsSection feedbacks={config?.approvedFeedbacks || []} />
-          </Suspense>
+          </Suspense></LazyLoad>
 
-          <ProgrammaticSeoArticles
+          <LazyLoad rootMargin="600px"><ProgrammaticSeoArticles
             platforms={activePlatforms}
             geo={geo}
             onClaimClick={handleClaimClick}
-          />
+          /></LazyLoad>
 
           {/* Original Table */}
-          <SeoContentSection geo={geo}
+          <LazyLoad rootMargin="600px"><SeoContentSection geo={geo}
             platforms={activePlatforms}
             customCoupons={config.customCoupons || []}
             onClaimClick={handleClaimClick}
-          />
+          /></LazyLoad>
 
           {/* 7. FAQ Section */}
-          <PaymentGuideSection geo={geo} />
+          <LazyLoad rootMargin="600px"><PaymentGuideSection geo={geo} /></LazyLoad>
 
           {/* 7. FAQ Section */}
-          <FaqSection config={config} />
+          <LazyLoad rootMargin="600px"><FaqSection config={config} /></LazyLoad>
         </Suspense>
       </main>
 
