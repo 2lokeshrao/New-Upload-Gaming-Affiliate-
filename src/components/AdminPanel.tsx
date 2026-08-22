@@ -490,7 +490,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                         <div className="flex items-center gap-3">
                           <img loading="lazy" width="40" height="40" decoding="async" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }}
-                            src={"/api/cdn/images/" + platform.id + ".webp" || 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=100'}
+                            src={platform.logoUrl || undefined || 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=100'}
                             alt={platform.name}
                             className="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-900"
                           />
@@ -984,7 +984,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           </div>
                         </td>
                         <td className="p-3 flex items-center gap-3">
-                          <img width="40" height="40" decoding="async" loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }}  src={"/api/cdn/images/" + p.id + ".webp"} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-slate-800" />
+                          <img width="40" height="40" decoding="async" loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }}  src={p.logoUrl || undefined} alt={p.name} className="w-9 h-9 rounded-lg object-cover bg-slate-800" />
                           <div>
                             <span className="font-extrabold text-white text-sm block">{p.name}</span>
                             <span className="text-[10px] text-purple-400 font-mono">/go/{p.slug}</span>
