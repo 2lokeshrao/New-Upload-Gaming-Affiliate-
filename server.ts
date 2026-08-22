@@ -1235,6 +1235,11 @@ async function startServer() {
     logger.info(`[Production] Serving static files from: ${distPath}`);
 
     // Serve static files with proper MIME types & cache headers
+    const publicPath = path.join(process.cwd(), "public");
+    if (fs.existsSync(publicPath)) {
+      app.use(express.static(publicPath, { maxAge: "1d" }));
+    }
+
     app.use(express.static(distPath, {
       maxAge: '1y',
       immutable: true,
