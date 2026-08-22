@@ -27,7 +27,7 @@ export const AffiliateLinkCard: React.FC<Props> = ({ link, onTrack }) => {
       <div className="flex items-center gap-4 w-full sm:w-auto">
         {link.logoUrl ? (
           <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
-            <img src={link.logoUrl || undefined} alt={link.brandName} className="w-full h-full object-cover" />
+            <img src={link.logoUrl || undefined} alt={link.brandName} width="40" height="40" className="w-full h-full object-cover" />
           </div>
         ) : (
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-300 flex items-center justify-center flex-shrink-0 shadow-inner">

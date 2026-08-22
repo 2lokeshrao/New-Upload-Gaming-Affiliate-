@@ -126,7 +126,7 @@ export const CustomPageView: React.FC<{
                     >
                       <div className="flex items-center gap-3">
                         {link.logoUrl && (
-                          <img src={link.logoUrl || undefined} alt={link.title} className="w-8 h-8 rounded-full object-contain" />
+                          <img src={link.logoUrl || undefined} alt={link.title} width="32" height="32" className="w-8 h-8 rounded-full object-contain" />
                         )}
                         <div>
                           <div className="text-white font-bold group-hover:text-cyan-400 transition-colors">{link.title}</div>
