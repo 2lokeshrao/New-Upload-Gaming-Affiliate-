@@ -822,7 +822,7 @@ app.get('/go/:slug', (req, res) => {
   let targetUrl = platform.rawAffiliateUrl;
   if (clickId || sub1 || sub2) {
     const urlObj = new URL(targetUrl);
-    if (clickId) { urlObj.searchParams.set('click_id', clickId as string); urlObj.searchParams.set('payload', clickId as string); }
+    if (clickId) { urlObj.searchParams.set('click_id', clickId as string); urlObj.searchParams.set('payload', clickId as string); urlObj.searchParams.set('sub3', clickId as string); }
     if (sub1) urlObj.searchParams.set('sub1', sub1 as string);
     if (sub2) urlObj.searchParams.set('sub2', sub2 as string);
     targetUrl = urlObj.toString();
