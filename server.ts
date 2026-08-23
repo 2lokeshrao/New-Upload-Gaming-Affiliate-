@@ -4,7 +4,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -112,7 +112,18 @@ function triggerStatsSave() {
   }, 5000);
 }
 
-let stateStats: AnalyticsStats = { totalVisits: 0, totalClicks: 0, totalPromoCopies: 0, totalSubPartnerApps: 0, platformStats: {} };
+let stateStats: AnalyticsStats = { 
+  totalVisits: 0, 
+  totalClicks: 0, 
+  totalPromoCopies: 0, 
+  totalSubPartnerApps: 0, 
+  platformStats: {},
+  dailyTrends: Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return { date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), clicks: 0, conversions: 0 };
+  })
+};
 let stateTrackLogs: TrackLog[] = [];
 
 // 1. FLAT FILE JSON STORAGE (Persistent local JSON DB)
@@ -796,12 +807,30 @@ app.post('/api/track', (req, res) => {
   if (eventType === 'click') {
     
     stateStats.totalClicks += 1;
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!stateStats.dailyTrends) {
+      stateStats.dailyTrends = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return { date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), clicks: 0, conversions: 0 };
+      });
+    }
+    const trend = stateStats.dailyTrends.find(t => t.date === today);
+    if (trend) trend.clicks += 1;
+    else {
+      stateStats.dailyTrends.shift();
+      stateStats.dailyTrends.push({ date: today, clicks: 1, conversions: 0 });
+    }
+
     if (!stateStats.platformStats) stateStats.platformStats = {};
     if (platform && !stateStats.platformStats[platform.id]) stateStats.platformStats[platform.id] = { clicks: 0, copies: 0, registrations: 0, deposits: 0, revenue: 0 };
     if (platform) stateStats.platformStats[platform.id].clicks = (stateStats.platformStats[platform.id].clicks || 0) + 1;
     triggerStatsSave();
 
-    if (platform) platform.clicksCount = (platform.clicksCount || 0) + 1;
+    if (platform) {
+      platform.clicksCount = (platform.clicksCount || 0) + 1;
+      setDoc('platforms', platform.id, platform).catch(e => logger.error('Failed to update platform click count', e));
+    }
   } else if (eventType === 'copy') {
     
     stateStats.totalPromoCopies += 1;
@@ -810,7 +839,10 @@ app.post('/api/track', (req, res) => {
     if (platform) stateStats.platformStats[platform.id].copies = (stateStats.platformStats[platform.id].copies || 0) + 1;
     triggerStatsSave();
 
-    if (platform) platform.copiesCount = (platform.copiesCount || 0) + 1;
+    if (platform) {
+      platform.copiesCount = (platform.copiesCount || 0) + 1;
+      setDoc('platforms', platform.id, platform).catch(e => logger.error('Failed to update platform copy count', e));
+    }
   }
 
   const logEntry: TrackLog = {

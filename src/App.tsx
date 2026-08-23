@@ -257,10 +257,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Failed to load initial affiliate data:', err);
-      // Fallback to local data to prevent hanging skeleton on fetch failure
-      setPlatforms(initialPlatforms);
-      setConfig(initialGlobalConfig);
-      setCustomPages(initialCustomPages);
+      // Removed fallback to prevent showing default data.
     } finally {
       setLoading(false);
     }
