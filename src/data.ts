@@ -255,6 +255,50 @@ export const initialGlobalConfig: GlobalConfig = {
 
 export const initialPlatforms: GamingPlatform[] = [
   {
+    id: "bybit",
+    slug: "bybit",
+    name: "Bybit",
+    logoUrl: "/logos/bybit.svg",
+    rating: 9.9,
+    starRating: 5,
+    averageUserRating: 4.9,
+    totalReviewsCount: 32410,
+    badges: ["Top Crypto Exchange", "High Leverage", "Instant Deposits", "No KYC (Basic)"],
+    bonusText: "Get up to 30,000 USDT Deposit Bonus + Discounts",
+    promoCode: "2GRKXWO",
+    rawAffiliateUrl: "https://www.bybit.com/invite?ref=2GRKXWO&medium=referral&utm_campaign=evergreen&share_to=link",
+    masterPartnerUrl: "https://www.bybit.com/invite?ref=2GRKXWO&medium=referral&utm_campaign=evergreen&share_to=link",
+    isFeatured: true,
+    featuredRank: 2, 
+    isActive: true,
+    clicksCount: 0,
+    copiesCount: 0,
+    category: "Crypto Exchange",
+    metaTitle: "Bybit Promo Code 2GRKXWO | Claim 30,000 USDT Bonus",
+    metaDescription: "Sign up on Bybit with referral code 2GRKXWO to claim up to 30,000 USDT in deposit bonuses and enjoy lifetime trading fee discounts.",
+    metaKeywords: "bybit promo code, bybit referral code, 2GRKXWO, bybit bonus, crypto exchange",
+    reviewContent: `# Bybit Exchange Review & Promo Code
+
+Bybit is one of the world's fastest-growing and most reliable cryptocurrency exchanges, trusted by millions of traders globally. Whether you are a beginner looking to buy your first crypto or a professional trading derivatives with high leverage, Bybit provides a top-tier platform.
+
+### Why Choose Bybit?
+- **Massive Welcome Rewards:** Claim up to a **30,000 USDT deposit bonus** when you sign up.
+- **Low Trading Fees:** Enjoy some of the most competitive spot and derivatives trading fees in the market.
+- **Deep Liquidity & Zero Overloads:** Execute trades instantly without system crashes during high volatility.
+- **Advanced Tools:** Access copy trading, trading bots, earning pools, and Web3 features.
+
+### How to Claim Your Bonus
+1. Click the link above to visit Bybit.
+2. Register for a new account.
+3. Ensure the Referral Code **2GRKXWO** is applied.
+4. Complete your first deposit and start trading to unlock your 30,000 USDT rewards!`,
+    faqs: [
+      { q: "What is the best Bybit referral code for 2026?", a: "The best Bybit referral code is 2GRKXWO. It unlocks the maximum deposit bonus up to 30,000 USDT and gives you access to exclusive trading fee discounts." },
+      { q: "Do I need KYC to trade on Bybit?", a: "Bybit requires basic KYC for most deposits and trading features to ensure security and compliance." },
+      { q: "How do I get the 30,000 USDT bonus?", a: "The bonus is tiered based on your initial deposit and trading volume within the first 14 days of registration using code 2GRKXWO." }
+    ]
+  },
+  {
     id: "hostinger",
     slug: "hostinger",
     name: "Hostinger",
