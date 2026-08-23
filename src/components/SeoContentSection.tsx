@@ -1,6 +1,7 @@
-import React from 'react';
+// Force HMR invalidation
+import React, { useState } from 'react';
 import { GamingPlatform, CustomCoupon } from '../types';
-import { Search, CheckCircle2, Flame, Award, Tag, Ticket } from 'lucide-react';
+import { Search, CheckCircle2, Flame, Award, Tag, Ticket, X, Copy, ExternalLink } from 'lucide-react';
 
 import { UserGeo } from '../types';
 
@@ -19,8 +20,15 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
   onClaimClick,
   onCustomCouponClaim
 }) => {
+  const [selectedPlatform, setSelectedPlatform] = useState<GamingPlatform | null>(null);
+
+  const validPlatforms = platforms.filter(p => {
+    const code = p.promoCode?.trim().toLowerCase();
+    return code && !['not applicable', 'n/a', 'blank', 'none', '-'].includes(code);
+  });
+
   // Generate Dynamic FAQ Schema.org JSON-LD for Search Engines
-  const dynamicFaqQuestions = platforms.map(p => ([
+  const dynamicFaqQuestions = validPlatforms.map(p => ([
     {
       "@type": "Question",
       "name": `Is ${p.name} legit and safe to play in 2026?`,
@@ -145,8 +153,8 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
               {/* Standard Gaming Platforms */}
-              {platforms.map(p => (
-                <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+              {validPlatforms.map(p => (
+                <tr key={p.id} className="hover:bg-slate-800/40 transition-colors cursor-pointer" onClick={() => setSelectedPlatform(p)}>
                   <td className="p-3.5 flex items-center gap-2.5">
                     <img onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} src={p.logoUrl || undefined} alt={p.name} width="28" height="28" loading="lazy" decoding="async" className="w-7 h-7 rounded-lg object-cover" />
                     <div>
@@ -177,7 +185,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
 
                   <td className="p-3.5 text-right">
                     <button
-                      onClick={() => onClaimClick(p)}
+                      onClick={(e) => { e.stopPropagation(); setSelectedPlatform(p); }}
                       className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs shadow-md shadow-purple-600/20 cursor-pointer"
                     >
                       GET BONUS
@@ -287,6 +295,67 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
           </span>
         ))}
       </div>
+
+      {/* Custom Popup Modal for Platform Benefits */}
+      {selectedPlatform && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl relative my-10" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setSelectedPlatform(null); }}
+              className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="p-6 sm:p-8">
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-800">
+                <img src={selectedPlatform.logoUrl || undefined} alt={selectedPlatform.name} className="w-16 h-16 rounded-xl object-cover bg-slate-800 border border-slate-700" />
+                <div>
+                  <h2 className="text-2xl font-black text-white">{selectedPlatform.name}</h2>
+                  <span className="text-emerald-400 font-bold">{selectedPlatform.bonusText || selectedPlatform.bonusTitle}</span>
+                </div>
+              </div>
+
+              {selectedPlatform.reviewContent ? (
+                <div 
+                   className="prose prose-invert prose-sm max-w-none mb-8 prose-headings:text-slate-200 prose-headings:font-black prose-a:text-purple-400 prose-ul:text-slate-300" 
+                   dangerouslySetInnerHTML={{ __html: selectedPlatform.reviewContent }} 
+                />
+              ) : (
+                <div className="mb-8">
+                  <h3 className="text-lg font-bold text-white mb-3">Why Choose {selectedPlatform.name}?</h3>
+                  <p className="text-slate-300 mb-4">Unlock exclusive benefits and massive bonuses when you join {selectedPlatform.name}. Fast withdrawals, huge game selection, and VIP rewards await!</p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Verified & Trusted Platform</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> Fast & Secure Withdrawals</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> 24/7 Customer Support</li>
+                  </ul>
+                </div>
+              )}
+
+              <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="text-center sm:text-left">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">Your Exclusive Promo Code</span>
+                  <span className="text-3xl font-black text-amber-400 font-mono tracking-tight">{selectedPlatform.promoCode || 'MAXBOOST500'}</span>
+                </div>
+                <button
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     navigator.clipboard.writeText(selectedPlatform.promoCode || 'MAXBOOST500');
+                     onClaimClick(selectedPlatform);
+                     setSelectedPlatform(null);
+                  }}
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 transition-all transform hover:scale-105"
+                >
+                  <Copy className="w-5 h-5" />
+                  <span>COPY & CLAIM BONUS</span>
+                  <ExternalLink className="w-4 h-4 ml-1 opacity-70" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

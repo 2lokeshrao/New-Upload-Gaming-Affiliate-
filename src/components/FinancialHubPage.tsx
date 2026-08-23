@@ -60,7 +60,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
     ];
   };
 
-  const virtualCards = [
+  const virtualCards: any[] = [
     { name: 'AstroPay Card', desc: 'The #1 Virtual Card for iGaming. Deposit instantly worldwide.', icon: Globe, color: 'from-red-600 to-red-500', link: 'https://astropay.com/?ref=AFF_ID' },
     { name: 'Revolut Virtual', desc: 'Multi-currency virtual cards with top-tier security.', icon: Zap, color: 'from-slate-900 to-slate-700', link: 'https://revolut.com/?ref=AFF_ID' },
     { name: 'Wise (TransferWise)', desc: 'Low-fee digital card for international gaming deposits.', icon: Landmark, color: 'from-green-600 to-emerald-500', link: 'https://wise.com/?ref=AFF_ID' },

@@ -1,3 +1,4 @@
+// Force HMR invalidation
 import React, { useState } from 'react';
 import { GamingPlatform, UserGeo } from '../types';
 import { Star, CheckCircle2, ShieldCheck, Copy, ExternalLink, Flame, Sparkles, Users, QrCode, MessageSquare, Wallet } from 'lucide-react';
