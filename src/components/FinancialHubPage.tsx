@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { Sidebar } from './Sidebar';
 import { GamingPlatform, CustomPage, GlobalConfig } from '../types';
-import { CreditCard, Landmark, Banknote, ShieldCheck, ArrowRight, Home, ChevronRight, Zap, Globe } from 'lucide-react';
+import { CreditCard, Landmark, Banknote, ShieldCheck, ArrowRight, Home, ChevronRight, Zap, Globe, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { UserGeo } from '../types';
+import { LazyImage } from './LazyImage';
 
 export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: GamingPlatform[]; customPages: CustomPage[]; config: GlobalConfig }> = ({ path, geo, platforms, customPages, config }) => {
   // Determine primary intent based on URL
@@ -108,52 +109,184 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-12">
-            
+          <div className="lg:col-span-2 space-y-12">            
             {/* Global Virtual Cards Section */}
-            <section id="virtual-cards">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <Globe className="w-6 h-6 text-blue-400" />
-                Global Virtual Cards for Gaming
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {virtualCards.map((card, idx) => (
-                  <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-blue-500/50 transition-all group flex flex-col">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center text-white mb-4 shadow-lg`}>
-                      <card.icon className="w-6 h-6" />
+            {!isLoans && (
+              <section id="virtual-cards">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <Globe className="w-6 h-6 text-blue-400" />
+                  Global Virtual Cards for Gaming
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {virtualCards.map((card, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-blue-500/50 transition-all group flex flex-col">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.color} flex items-center justify-center text-white mb-4 shadow-lg`}>
+                        <card.icon className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{card.desc}</p>
+                      <a href={card.link} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-blue-500/30">
+                        Get Virtual Card <ArrowRight className="w-4 h-4" />
+                      </a>
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
-                    <p className="text-sm text-slate-400 mb-6 flex-1">{card.desc}</p>
-                    <a href={card.link} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-blue-500/30">
-                      Get Virtual Card <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Bank Accounts Section */}
+            {!isLoans && (
+              <section id="bank-accounts">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <PiggyBank className="w-6 h-6 text-pink-400" />
+                  Top Bank & Savings Accounts
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {platforms.filter(p => p.category === 'Bank Accounts' && p.isActive).map((bank, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-pink-500/50 transition-all group flex flex-col">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                         <PiggyBank className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
+                         {bank.logoUrl ? (
+                           <LazyImage src={bank.logoUrl} alt={bank.name} className="w-16 h-16 object-contain" />
+                         ) : (
+                           <span className="font-black tracking-widest text-white/80">{bank.name}</span>
+                         )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{bank.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{bank.bonusText || bank.badges?.join(' • ')}</p>
+                      <a href={bank.masterPartnerUrl || bank.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-pink-500/30">
+                        Open Account <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Demat Accounts Section */}
+            {!isLoans && (
+              <section id="demat-accounts">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-indigo-400" />
+                  Demat & Trading Accounts
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {platforms.filter(p => p.category === 'Demat Accounts' && p.isActive).map((demat, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group flex flex-col">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                         <TrendingUp className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
+                         {demat.logoUrl ? (
+                           <LazyImage src={demat.logoUrl} alt={demat.name} className="w-16 h-16 object-contain" />
+                         ) : (
+                           <span className="font-black tracking-widest text-white/80">{demat.name}</span>
+                         )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{demat.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{demat.bonusText || demat.badges?.join(' • ')}</p>
+                      <a href={demat.masterPartnerUrl || demat.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-indigo-500/30">
+                        Start Trading <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Investments Section */}
+            {!isLoans && (
+              <section id="investments">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <Briefcase className="w-6 h-6 text-orange-400" />
+                  Wealth & Investments
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {platforms.filter(p => p.category === 'Investments' && p.isActive).map((inv, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-orange-500/50 transition-all group flex flex-col">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                         <Briefcase className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
+                         {inv.logoUrl ? (
+                           <LazyImage src={inv.logoUrl} alt={inv.name} className="w-16 h-16 object-contain" />
+                         ) : (
+                           <span className="font-black tracking-widest text-white/80">{inv.name}</span>
+                         )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{inv.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{inv.bonusText || inv.badges?.join(' • ')}</p>
+                      <a href={inv.masterPartnerUrl || inv.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-orange-500/30">
+                        Invest Now <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Local Credit Cards Section */}
-            <section id="credit-cards">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <CreditCard className="w-6 h-6 text-purple-400" />
-                Top Credit Cards in {geo.country || 'Your Region'}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {getCreditCards(geo.countryCode).map((card, idx) => (
-                  <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-purple-500/50 transition-all group flex flex-col">
-                    <div className={`w-full h-24 rounded-xl bg-gradient-to-r ${card.color} flex items-center justify-center text-white/50 mb-4 shadow-lg relative overflow-hidden`}>
-                       <CreditCard className="w-12 h-12 absolute -right-2 -bottom-2 opacity-20" />
-                       <span className="font-black tracking-widest text-white/80">{card.name}</span>
+            {!isLoans && (
+              <section id="credit-cards">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <CreditCard className="w-6 h-6 text-purple-400" />
+                  Top Credit Cards in {geo.country || 'Your Region'}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {creditCardPlatforms.length > 0 ? creditCardPlatforms.map((card, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-purple-500/50 transition-all group flex flex-col">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                         <CreditCard className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
+                         {card.logoUrl ? (
+                           <LazyImage src={card.logoUrl} alt={card.name} className="w-16 h-16 object-contain" />
+                         ) : (
+                           <span className="font-black tracking-widest text-white/80">{card.name}</span>
+                         )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{card.bonusText || card.badges?.join(' • ')}</p>
+                      <a href={card.masterPartnerUrl || card.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-purple-500/30">
+                        Apply Now <ArrowRight className="w-4 h-4" />
+                      </a>
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
-                    <p className="text-sm text-slate-400 mb-6 flex-1">{card.desc}</p>
-                    <a href={card.link} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-purple-500/30">
-                      Apply Now <ArrowRight className="w-4 h-4" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  )) : (
+                    <div className="col-span-1 sm:col-span-2 text-center py-8 text-slate-500">
+                      No credit cards available for your region yet.
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Personal & Business Loans Section */}
+            {isLoans && (
+              <section id="loans">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <Banknote className="w-6 h-6 text-emerald-400" />
+                  Instant Personal & Business Loans
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {platforms.filter(p => p.category === 'Loans' && p.isActive).map((loan, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all group flex flex-col">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                         <Banknote className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
+                         {loan.logoUrl ? (
+                           <LazyImage src={loan.logoUrl} alt={loan.name} className="w-16 h-16 object-contain" />
+                         ) : (
+                           <span className="font-black tracking-widest text-white/80">{loan.name}</span>
+                         )}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mb-2">{loan.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6 flex-1">{loan.bonusText || loan.badges?.join(' • ')}</p>
+                      <a href={loan.masterPartnerUrl || loan.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-emerald-500/30">
+                        Apply For Loan <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  ))}
+                  {platforms.filter(p => p.category === 'Loans' && p.isActive).length === 0 && (
+                    <div className="col-span-1 sm:col-span-2 text-center py-8 text-slate-500">
+                      No loan offers available right now.
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
           </div>
 

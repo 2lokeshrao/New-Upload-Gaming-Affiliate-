@@ -28,7 +28,7 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
   onOpenFeedbackModal
 }) => {
   const { language, t } = useLanguage();
-  const activePlatforms = platforms.filter(p => p.isActive);
+  const activePlatforms = platforms.filter(p => p.isActive && !['Credit Cards', 'Banking & Finance', 'Loans', 'Demat Accounts', 'Bank Accounts', 'Investments'].includes(p.category || ''));
   
   // Localized redirect logic: Prioritize specific offers based on UserGeo (e.g., India)
   const sortedPlatforms = [...activePlatforms].sort((a, b) => {
