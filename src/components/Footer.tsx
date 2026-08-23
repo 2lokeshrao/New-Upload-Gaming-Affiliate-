@@ -84,7 +84,7 @@ export const Footer: React.FC<FooterProps> = ({
                 ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
               })
             }} />
-</div>
+          </div>
           </div>
 
 
