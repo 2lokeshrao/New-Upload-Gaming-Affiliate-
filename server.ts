@@ -77,7 +77,7 @@ if (!process.env.JWT_SECRET || !process.env.ADMIN_PASSCODE) {
   logger.warn("WARNING: JWT_SECRET or ADMIN_PASSCODE environment variables not provided. Using secure default fallbacks.");
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -230,6 +230,9 @@ async function saveState() {
   try {
     // 1. Sync Platforms
     if (Array.isArray(statePlatforms)) {
+      statePlatforms.forEach((p, idx) => {
+        (p as any).orderIndex = idx;
+      });
       for (const p of statePlatforms) {
         await setDoc('platforms', p.id, p);
       }
@@ -265,7 +268,13 @@ async function loadState() {
     // 1. Load or Seed Platforms
     const pSnap = await getCollection('platforms');
     if (pSnap.length > 0) {
-      statePlatforms = pSnap as GamingPlatform[];
+      const loaded = pSnap as GamingPlatform[];
+      loaded.sort((a: any, b: any) => {
+        const aIdx = typeof a.orderIndex === 'number' ? a.orderIndex : 999;
+        const bIdx = typeof b.orderIndex === 'number' ? b.orderIndex : 999;
+        return aIdx - bIdx;
+      });
+      statePlatforms = loaded;
     } else {
       logger.info("Database empty: Seeding initial platforms...");
       for (const p of initialPlatforms) {
@@ -318,6 +327,30 @@ async function loadState() {
 
 // Ensure state is loaded asynchronously during boot
 loadState();
+
+function setupRealtimeListeners() {
+  onSnapshot(collection(firestoreDb, 'platforms'), (snapshot) => {
+    const updatedPlatforms: GamingPlatform[] = [];
+    snapshot.forEach(doc => updatedPlatforms.push(doc.data() as GamingPlatform));
+    if (updatedPlatforms.length > 0) {
+      updatedPlatforms.sort((a: any, b: any) => {
+        const aIdx = typeof a.orderIndex === 'number' ? a.orderIndex : 999;
+        const bIdx = typeof b.orderIndex === 'number' ? b.orderIndex : 999;
+        return aIdx - bIdx;
+      });
+      statePlatforms = updatedPlatforms;
+      logger.info("Real-time sync: Platforms updated from Firebase.");
+    }
+  });
+
+  onSnapshot(doc(firestoreDb, 'settings', 'globalConfig'), (snapshot) => {
+    if (snapshot.exists()) {
+      stateConfig = snapshot.data() as GlobalConfig;
+      logger.info("Real-time sync: Global config updated from Firebase.");
+    }
+  });
+}
+setupRealtimeListeners();
 
 // --- IMAGE OPTIMIZATION CDN ROUTE ---
 app.get('/api/cdn/images/:platformId.webp', async (req, res) => {
@@ -764,7 +797,7 @@ app.post('/api/admin/platforms', verifyJwtToken, (req, res) => {
 
 // API: Save Config (Protected)
 
-app.post('/api/admin/custom-pages', verifyJwtToken, express.json(), (req, res) => {
+app.post('/api/admin/custom-pages', verifyJwtToken, express.json({ limit: '50mb' }), (req, res) => {
   const { pages } = req.body;
   if (Array.isArray(pages)) {
     stateCustomPages = pages;

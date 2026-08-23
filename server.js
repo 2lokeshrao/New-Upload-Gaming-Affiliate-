@@ -3,7 +3,7 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc } from "firebase/firestore";
+import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc, onSnapshot } from "firebase/firestore";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import { GoogleGenAI, Type } from "@google/genai";
@@ -1059,7 +1059,7 @@ var ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || "admin123456";
 if (!process.env.JWT_SECRET || !process.env.ADMIN_PASSCODE) {
   logger.warn("WARNING: JWT_SECRET or ADMIN_PASSCODE environment variables not provided. Using secure default fallbacks.");
 }
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
@@ -1142,6 +1142,9 @@ async function getDoc(coll, docId) {
 async function saveState() {
   try {
     if (Array.isArray(statePlatforms)) {
+      statePlatforms.forEach((p, idx) => {
+        p.orderIndex = idx;
+      });
       for (const p of statePlatforms) {
         await setDoc("platforms", p.id, p);
       }
@@ -1168,7 +1171,13 @@ async function loadState() {
   try {
     const pSnap = await getCollection("platforms");
     if (pSnap.length > 0) {
-      statePlatforms = pSnap;
+      const loaded = pSnap;
+      loaded.sort((a, b) => {
+        const aIdx = typeof a.orderIndex === "number" ? a.orderIndex : 999;
+        const bIdx = typeof b.orderIndex === "number" ? b.orderIndex : 999;
+        return aIdx - bIdx;
+      });
+      statePlatforms = loaded;
     } else {
       logger.info("Database empty: Seeding initial platforms...");
       for (const p of initialPlatforms) {
@@ -1208,6 +1217,28 @@ async function loadState() {
   }
 }
 loadState();
+function setupRealtimeListeners() {
+  onSnapshot(collection(firestoreDb, "platforms"), (snapshot) => {
+    const updatedPlatforms = [];
+    snapshot.forEach((doc2) => updatedPlatforms.push(doc2.data()));
+    if (updatedPlatforms.length > 0) {
+      updatedPlatforms.sort((a, b) => {
+        const aIdx = typeof a.orderIndex === "number" ? a.orderIndex : 999;
+        const bIdx = typeof b.orderIndex === "number" ? b.orderIndex : 999;
+        return aIdx - bIdx;
+      });
+      statePlatforms = updatedPlatforms;
+      logger.info("Real-time sync: Platforms updated from Firebase.");
+    }
+  });
+  onSnapshot(doc(firestoreDb, "settings", "globalConfig"), (snapshot) => {
+    if (snapshot.exists()) {
+      stateConfig = snapshot.data();
+      logger.info("Real-time sync: Global config updated from Firebase.");
+    }
+  });
+}
+setupRealtimeListeners();
 app.get("/api/cdn/images/:platformId.webp", async (req, res) => {
   const platform = statePlatforms.find((p) => p.id === req.params.platformId);
   if (!platform || !platform.logoUrl) {
@@ -1557,7 +1588,7 @@ app.post("/api/admin/platforms", verifyJwtToken, (req, res) => {
   }
   return res.status(400).json({ error: "Invalid platform data array" });
 });
-app.post("/api/admin/custom-pages", verifyJwtToken, express.json(), (req, res) => {
+app.post("/api/admin/custom-pages", verifyJwtToken, express.json({ limit: "50mb" }), (req, res) => {
   const { pages } = req.body;
   if (Array.isArray(pages)) {
     stateCustomPages = pages;
