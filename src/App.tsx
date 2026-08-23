@@ -851,12 +851,12 @@ export default function App() {
         )}
 
         {/* Exit-Intent Popup Modal */}
-        {platforms.length > 0 && (
+        {activePlatforms.length > 0 && (
           <ExitIntentModal
             topPlatform={
               (config?.exitIntentConfig?.overridePlatformId && config.exitIntentConfig.overridePlatformId !== 'custom')
-                ? (platforms.find(p => p.id === config.exitIntentConfig?.overridePlatformId) || platforms.find(p => p.isFeatured && p.isActive) || platforms[0])
-                : (platforms.find(p => p.isFeatured && p.isActive) || platforms[0])
+                ? (activePlatforms.find(p => p.id === config.exitIntentConfig?.overridePlatformId) || activePlatforms.find(p => p.isFeatured) || activePlatforms[0])
+                : (activePlatforms.find(p => p.isFeatured) || activePlatforms[0])
             }
             exitIntentConfig={config?.exitIntentConfig}
             onClaimClick={handleClaimClick}

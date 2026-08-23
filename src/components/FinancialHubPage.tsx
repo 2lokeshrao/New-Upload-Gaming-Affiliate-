@@ -67,11 +67,11 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
   ];
 
   const loanOffers = [
-    { name: 'Instant Digital Credit', desc: 'Get approved for up to $5,000 instantly to fund your wallets.', icon: Banknote, provider: 'GlobalFin', time: '10 Mins', link: 'https://globalfin.com/apply?ref=AFF_ID' },
-    { name: 'Short-Term Cash Advance', desc: 'Fast, secure short-term funding directly to your bank account.', icon: Landmark, provider: 'QuickCash', time: '24 Hours', link: 'https://quickcash.com/apply?ref=AFF_ID' },
+    { name: 'Instant Digital Credit', desc: 'Get approved for up to $5,000 instantly to fund your wallets.', icon: Banknote, provider: 'GlobalFin', time: '10 Mins', link: 'https://sales.gromo.in/c/gN1zWIvqOEWeGuKqedkZ8' },
+    { name: 'Short-Term Cash Advance', desc: 'Fast, secure short-term funding directly to your bank account.', icon: Landmark, provider: 'QuickCash', time: '24 Hours', link: 'https://sales.gromo.in/c/gN1zWIvqOEWeGuKqedkZ8' },
   ];
 
-  const creditCardPlatforms = platforms.filter(p => (p.category === 'Credit Cards' || p.category === 'Banking & Finance') && p.isActive);
+  const creditCardPlatforms = platforms.filter(p => (p.category === 'Credit Cards' || p.category === 'Banking & Finance') && p.isActive !== false);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-amber-400 selection:text-slate-950 flex flex-col">
@@ -160,7 +160,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                   Top Bank & Savings Accounts
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {platforms.filter(p => p.category === 'Bank Accounts' && p.isActive).map((bank, idx) => (
+                  {platforms.filter(p => p.category === 'Bank Accounts' && p.isActive !== false).map((bank, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-pink-500/50 transition-all group flex flex-col">
                       <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <PiggyBank className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
@@ -203,7 +203,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                   Demat & Trading Accounts
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {platforms.filter(p => p.category === 'Demat Accounts' && p.isActive).map((demat, idx) => (
+                  {platforms.filter(p => p.category === 'Demat Accounts' && p.isActive !== false).map((demat, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group flex flex-col">
                       <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <TrendingUp className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
@@ -246,7 +246,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                   Wealth & Investments
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {platforms.filter(p => p.category === 'Investments' && p.isActive).map((inv, idx) => (
+                  {platforms.filter(p => p.category === 'Investments' && p.isActive !== false).map((inv, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-orange-500/50 transition-all group flex flex-col">
                       <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <Briefcase className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
@@ -322,7 +322,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                   Instant Personal & Business Loans
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {platforms.filter(p => p.category === 'Loans' && p.isActive).map((loan, idx) => (
+                  {platforms.filter(p => p.category === 'Loans' && p.isActive !== false).map((loan, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all group flex flex-col">
                       <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <Banknote className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
@@ -353,7 +353,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                       </button>
                     </div>
                   ))}
-                  {platforms.filter(p => p.category === 'Loans' && p.isActive).length === 0 && (
+                  {platforms.filter(p => p.category === 'Loans' && p.isActive !== false).length === 0 && (
                     <div className="col-span-1 sm:col-span-2 text-center py-8 text-slate-500">
                       No loan offers available right now.
                     </div>

@@ -24,7 +24,7 @@ export const TopThreeCarousel: React.FC<TopThreeProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const topPlatforms = platforms
-    .filter(p => p.isActive && p.isFeatured)
+    .filter(p => p.isActive !== false && p.isFeatured)
     .sort((a, b) => (a.featuredRank || 99) - (b.featuredRank || 99))
     .slice(0, 3);
 

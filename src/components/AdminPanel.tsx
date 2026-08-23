@@ -190,6 +190,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   // Move Platform (Reorder)
+  
+  const handleOrderChange = (currentIndex, newDisplayOrder) => {
+    let newIndex = newDisplayOrder - 1;
+    if (isNaN(newIndex)) return;
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex >= platforms.length) newIndex = platforms.length - 1;
+    if (newIndex === currentIndex) return;
+
+    const updated = [...platforms];
+    const [movedItem] = updated.splice(currentIndex, 1);
+    updated.splice(newIndex, 0, movedItem);
+    onSavePlatforms(updated);
+  };
+
   const handleMovePlatform = (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index > 0) {
       const updated = [...platforms];
@@ -209,7 +223,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Toggle Active/Inactive
   const handleToggleActive = (p: GamingPlatform) => {
     const updated = platforms.map(item =>
-      item.id === p.id ? { ...item, isActive: !item.isActive } : item
+      item.id === p.id ? { ...item, isActive: item.isActive === false ? true : false } : item
     );
     onSavePlatforms(updated);
   };
@@ -972,7 +986,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             >
                               <ChevronUp className="w-4 h-4" />
                             </button>
-                            <span className="font-mono text-xs text-slate-500 font-bold">{index + 1}</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max={platforms.length}
+                              defaultValue={index + 1}
+                              key={p.id + '-' + index}
+                              onBlur={(e) => handleOrderChange(index, parseInt(e.target.value, 10))}
+                              onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                              className="w-10 text-center bg-slate-900 border border-slate-700 rounded text-amber-500 font-bold focus:outline-none focus:border-amber-500 p-0.5 appearance-none"
+                              style={{ MozAppearance: 'textfield' }}
+                            />
                             <button
                               onClick={() => handleMovePlatform(index, 'down')}
                               disabled={index === platforms.length - 1}
@@ -1014,7 +1038,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               }`}
                             >
                               <Power className="w-3 h-3" />
-                              <span>{p.isActive ? 'Active' : 'Disabled'}</span>
+                              <span>{p.isActive !== false !== false ? 'Active' : 'Disabled'}</span>
                             </button>
 
                             {p.isFeatured && (

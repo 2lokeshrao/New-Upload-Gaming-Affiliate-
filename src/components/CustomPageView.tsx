@@ -174,8 +174,8 @@ export const CustomPageView: React.FC<{
                   {relatedArticles.map((article) => (
                     <a 
                       key={article.id}
-                      href={`/articles/${article.slug}`}
-                      onClick={(e) => handleNav(e, `/articles/${article.slug}`)}
+                      href={`/blog/${article.slug}`}
+                      onClick={(e) => handleNav(e, `/blog/${article.slug}`)}
                       className="block p-4 bg-slate-950 border border-slate-800 rounded-xl hover:border-amber-500/50 transition-all group"
                     >
                       <h3 className="text-white font-bold mb-2 group-hover:text-amber-400 transition-colors line-clamp-2">{article.title}</h3>

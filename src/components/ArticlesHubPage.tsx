@@ -106,8 +106,8 @@ export const ArticlesHubPage: React.FC<{
                     {autoArticles.map(a => (
                       <a 
                         key={a.id}
-                        href={`/articles/${a.slug}`}
-                        onClick={(e) => handleNav(e, `/articles/${a.slug}`)}
+                        href={`/blog/${a.slug}`}
+                        onClick={(e) => handleNav(e, `/blog/${a.slug}`)}
                         className="p-5 bg-slate-950 border border-slate-800 rounded-xl hover:border-amber-500/50 transition-colors group flex flex-col md:flex-row gap-4 items-start"
                       >
                         <div className="flex-1">

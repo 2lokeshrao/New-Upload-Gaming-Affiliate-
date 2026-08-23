@@ -648,21 +648,7 @@ app.get('/api/data', (req, res) => {
   stateStats.totalVisits += 1; triggerStatsSave();
   const geo = getGeoFromRequest(req);
 
-  const safePlatforms = statePlatforms.map(p => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    logoUrl: p.logoUrl,
-    rating: p.rating,
-    starRating: p.starRating,
-    badges: p.badges,
-    bonusText: p.bonusText,
-    promoCode: p.promoCode,
-    isFeatured: p.isFeatured,
-    featuredRank: p.featuredRank,
-    isActive: p.isActive,
-    category: p.category
-  }));
+  const safePlatforms = statePlatforms.map(p => ({ ...p }));
 
   const safeConfig = {
     heroHeadline: stateConfig.heroHeadline,
@@ -1442,12 +1428,7 @@ async function startServer() {
            html = html.replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${seoDesc}">`);
         }
 
-        const safePlatforms = statePlatforms.map(p => ({
-          id: p.id, slug: p.slug, name: p.name, logoUrl: p.logoUrl,
-          rating: p.rating, starRating: p.starRating, badges: p.badges,
-          bonusText: p.bonusText, promoCode: p.promoCode, isFeatured: p.isFeatured,
-          featuredRank: p.featuredRank, isActive: p.isActive, category: p.category
-        }));
+        const safePlatforms = statePlatforms.map(p => ({ ...p }));
         
         const safeConfig = {
           heroHeadline: stateConfig.heroHeadline, heroSubheading: stateConfig.heroSubheading,
