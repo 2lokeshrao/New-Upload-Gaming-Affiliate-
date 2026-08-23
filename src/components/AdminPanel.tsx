@@ -1446,7 +1446,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
 
               {/* Stat Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
                   <span className="text-xs text-slate-400 font-bold block">Total Landing Visits</span>
                   <span className="text-2xl font-black text-white mt-1 block">{stats?.totalVisits || 0}</span>
@@ -1461,10 +1461,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <span className="text-xs text-slate-400 font-bold block">Promo Code Copies</span>
                   <span className="text-2xl font-black text-amber-400 mt-1 block">{stats?.totalPromoCopies || 0}</span>
                 </div>
-
-                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
-                  <span className="text-xs text-slate-400 font-bold block">Lucky Wheel Spins</span>
-                </div>
               </div>
 
               {/* Activity Logs */}
@@ -1476,8 +1472,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <tr>
                         <th className="p-3">Timestamp</th>
                         <th className="p-3">Event</th>
-                        <th className="p-3">Rank</th>
-                      <th className="p-3">Platform</th>
+                        <th className="p-3">Platform</th>
                         <th className="p-3">Country</th>
                       </tr>
                     </thead>
@@ -1633,23 +1628,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           )}
 
-          {/* TAB 5: SEO CONTENT MANAGER */}
+          {/* TAB 5: SEO CONTENT MANAGER & HEALTH */}
           {activeTab === 'seo' && (
-            <SeoManagerTab
-              platforms={platforms}
-              onSavePlatforms={onSavePlatforms}
-              token={token}
-            />
-          )}
-
-
-
-
-          {activeTab === 'seo' && (
-            <SeoHealthTab
-              platforms={platforms}
-              onSavePlatforms={onSavePlatforms}
-            />
+            <div className="space-y-6">
+              <SeoManagerTab
+                platforms={platforms}
+                onSavePlatforms={onSavePlatforms}
+                token={token}
+              />
+              <SeoHealthTab
+                platforms={platforms}
+                onSavePlatforms={onSavePlatforms}
+              />
+            </div>
           )}
 
 

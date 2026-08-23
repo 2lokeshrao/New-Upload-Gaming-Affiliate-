@@ -6,7 +6,6 @@ import { UrgencyTimer } from './UrgencyTimer';
 import { AdContainer } from './AdContainer';
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatLocalizedBonus } from '../utils/currency';
-import { LazyImage } from './LazyImage';
 
 
 interface OfferGridProps {
@@ -29,7 +28,18 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
   onOpenFeedbackModal
 }) => {
   const { language, t } = useLanguage();
-  const activePlatforms = platforms.filter(p => p.isActive && !['Credit Cards', 'Banking & Finance', 'Loans', 'Demat Accounts', 'Bank Accounts', 'Investments'].includes(p.category || ''));
+  const topPlatformsIds = new Set(
+    platforms
+      .filter(p => p.isActive !== false && p.isFeatured)
+      .sort((a, b) => (a.featuredRank || 99) - (b.featuredRank || 99))
+      .slice(0, 3)
+      .map(p => p.id)
+  );
+
+  const activePlatforms = platforms.filter(p => 
+    p.isActive !== false && 
+    !topPlatformsIds.has(p.id)
+  );
   
   // Localized redirect logic: Prioritize specific offers based on UserGeo (e.g., India)
   const sortedPlatforms = [...activePlatforms].sort((a, b) => {
@@ -102,13 +112,14 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
                 {/* Header info */}
                 <div className="flex items-center justify-between mt-2 mb-4">
                   <div className="flex items-center gap-3">
-                    <LazyImage
-                      priority={index < 2}
+                    <img
                       src={p.logoUrl || undefined}
                       alt={p.name}
                       width="56"
                       height="56"
-                      className="w-14 h-14 rounded-xl border-2 border-slate-700/80 shadow-md bg-slate-800"
+                      loading={index < 2 ? "eager" : "lazy"}
+                      className="w-14 h-14 rounded-xl border-2 border-slate-700/80 shadow-md bg-slate-800 object-cover"
+                      onError={(e) => { console.error('Image failed to load:', p.logoUrl); }}
                     />
                     <div>
                       <h3 className="font-extrabold text-lg text-white leading-tight flex items-center gap-1.5">

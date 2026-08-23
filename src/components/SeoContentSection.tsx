@@ -156,7 +156,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
               {validPlatforms.map(p => (
                 <tr key={p.id} className="hover:bg-slate-800/40 transition-colors cursor-pointer" onClick={() => setSelectedPlatform(p)}>
                   <td className="p-3.5 flex items-center gap-2.5">
-                    <img onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAHBJREFUWEft0zEKACAQw8D7/6f90lJwEFzEQe5SU5qsqqpeZ373n/2YczxQYxMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwYhMwkro5m+0BP002ATXz2hAAAAAASUVORK5CYII="; }} src={p.logoUrl || undefined} alt={p.name} width="28" height="28" loading="lazy" decoding="async" className="w-7 h-7 rounded-lg object-cover" />
+                    <img onError={(e) => { console.error('Image failed to load in SEO Table:', p.logoUrl); }} src={p.logoUrl || undefined} alt={p.name} width="28" height="28" loading="lazy" decoding="async" className="w-7 h-7 rounded-lg object-cover" />
                     <div>
                       <span className="font-extrabold text-white block">{p.name}</span>
                       <span className="text-[10px] text-slate-400">{(p.category || 'Casino').toUpperCase()}</span>
