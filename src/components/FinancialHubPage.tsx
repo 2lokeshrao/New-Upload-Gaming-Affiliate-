@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from './Sidebar';
 import { GamingPlatform, CustomPage, GlobalConfig } from '../types';
-import { CreditCard, Landmark, Banknote, ShieldCheck, ArrowRight, Home, ChevronRight, Zap, Globe, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
+import { CreditCard, CheckCircle, Landmark, Banknote, ShieldCheck, ArrowRight, Home, ChevronRight, Zap, Globe, TrendingUp, PiggyBank, Briefcase } from 'lucide-react';
 import { UserGeo } from '../types';
 import { LazyImage } from './LazyImage';
+import { PlatformDetailsModal } from './PlatformDetailsModal';
 
 export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: GamingPlatform[]; customPages: CustomPage[]; config: GlobalConfig }> = ({ path, geo, platforms, customPages, config }) => {
   // Determine primary intent based on URL
+  const [selectedPlatform, setSelectedPlatform] = useState<GamingPlatform | null>(null);
   const isLoans = path.includes('/loans');
   const isCards = path.includes('/virtual-cards') || path.includes('/credit-card');
   
@@ -69,6 +71,8 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
     { name: 'Short-Term Cash Advance', desc: 'Fast, secure short-term funding directly to your bank account.', icon: Landmark, provider: 'QuickCash', time: '24 Hours', link: 'https://quickcash.com/apply?ref=AFF_ID' },
   ];
 
+  const creditCardPlatforms = platforms.filter(p => (p.category === 'Credit Cards' || p.category === 'Banking & Finance') && p.isActive);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-300 font-sans selection:bg-amber-400 selection:text-slate-950 flex flex-col">
       {/* Mini Header */}
@@ -124,7 +128,21 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                         <card.icon className="w-6 h-6" />
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
-                      <p className="text-sm text-slate-400 mb-6 flex-1">{card.desc}</p>
+                      
+    <div className="flex-1 mb-6 flex flex-col gap-2">
+      <p className="text-sm text-slate-400 font-medium">{card.desc}</p>
+      {card.benefits && card.benefits.length > 0 && (
+        <ul className="space-y-1.5 mt-2">
+          {card.benefits.slice(0, 2).map((b: string, i: number) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  
                       <a href={card.link} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-blue-500/30">
                         Get Virtual Card <ArrowRight className="w-4 h-4" />
                       </a>
@@ -144,7 +162,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {platforms.filter(p => p.category === 'Bank Accounts' && p.isActive).map((bank, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-pink-500/50 transition-all group flex flex-col">
-                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <PiggyBank className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
                          {bank.logoUrl ? (
                            <LazyImage src={bank.logoUrl} alt={bank.name} className="w-16 h-16 object-contain" />
@@ -153,10 +171,24 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                          )}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{bank.name}</h3>
-                      <p className="text-sm text-slate-400 mb-6 flex-1">{bank.bonusText || bank.badges?.join(' • ')}</p>
-                      <a href={bank.masterPartnerUrl || bank.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-pink-500/30">
+                      
+    <div className="flex-1 mb-6 flex flex-col gap-2">
+      <p className="text-sm text-slate-400 font-medium">{bank.bonusText || bank.badges?.join(' • ')}</p>
+      {bank.benefits && bank.benefits.length > 0 && (
+        <ul className="space-y-1.5 mt-2">
+          {bank.benefits.slice(0, 2).map((b: string, i: number) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  
+                      <button onClick={() => setSelectedPlatform(bank)} className="w-full py-2.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-pink-500/30">
                         Open Account <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -173,7 +205,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {platforms.filter(p => p.category === 'Demat Accounts' && p.isActive).map((demat, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group flex flex-col">
-                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <TrendingUp className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
                          {demat.logoUrl ? (
                            <LazyImage src={demat.logoUrl} alt={demat.name} className="w-16 h-16 object-contain" />
@@ -182,10 +214,24 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                          )}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{demat.name}</h3>
-                      <p className="text-sm text-slate-400 mb-6 flex-1">{demat.bonusText || demat.badges?.join(' • ')}</p>
-                      <a href={demat.masterPartnerUrl || demat.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-indigo-500/30">
+                      
+    <div className="flex-1 mb-6 flex flex-col gap-2">
+      <p className="text-sm text-slate-400 font-medium">{demat.bonusText || demat.badges?.join(' • ')}</p>
+      {demat.benefits && demat.benefits.length > 0 && (
+        <ul className="space-y-1.5 mt-2">
+          {demat.benefits.slice(0, 2).map((b: string, i: number) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  
+                      <button onClick={() => setSelectedPlatform(demat)} className="w-full py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-indigo-500/30">
                         Start Trading <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -202,7 +248,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {platforms.filter(p => p.category === 'Investments' && p.isActive).map((inv, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-orange-500/50 transition-all group flex flex-col">
-                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <Briefcase className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
                          {inv.logoUrl ? (
                            <LazyImage src={inv.logoUrl} alt={inv.name} className="w-16 h-16 object-contain" />
@@ -211,10 +257,24 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                          )}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{inv.name}</h3>
-                      <p className="text-sm text-slate-400 mb-6 flex-1">{inv.bonusText || inv.badges?.join(' • ')}</p>
-                      <a href={inv.masterPartnerUrl || inv.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-orange-500/30">
+                      
+    <div className="flex-1 mb-6 flex flex-col gap-2">
+      <p className="text-sm text-slate-400 font-medium">{inv.bonusText || inv.badges?.join(' • ')}</p>
+      {inv.benefits && inv.benefits.length > 0 && (
+        <ul className="space-y-1.5 mt-2">
+          {inv.benefits.slice(0, 2).map((b: string, i: number) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  
+                      <button onClick={() => setSelectedPlatform(inv)} className="w-full py-2.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-orange-500/30">
                         Invest Now <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -231,7 +291,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {creditCardPlatforms.length > 0 ? creditCardPlatforms.map((card, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-purple-500/50 transition-all group flex flex-col">
-                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <CreditCard className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
                          {card.logoUrl ? (
                            <LazyImage src={card.logoUrl} alt={card.name} className="w-16 h-16 object-contain" />
@@ -241,9 +301,9 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{card.name}</h3>
                       <p className="text-sm text-slate-400 mb-6 flex-1">{card.bonusText || card.badges?.join(' • ')}</p>
-                      <a href={card.masterPartnerUrl || card.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-purple-500/30">
+                      <button onClick={() => setSelectedPlatform(card)} className="w-full py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-purple-500/30">
                         Apply Now <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   )) : (
                     <div className="col-span-1 sm:col-span-2 text-center py-8 text-slate-500">
@@ -264,7 +324,7 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {platforms.filter(p => p.category === 'Loans' && p.isActive).map((loan, idx) => (
                     <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition-all group flex flex-col">
-                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-center mb-4 shadow-lg relative overflow-hidden">
+                      <div className="w-full h-24 rounded-xl bg-slate-800 flex items-center justify-start px-6 mb-4 shadow-lg relative overflow-hidden">
                          <Banknote className="w-12 h-12 absolute -right-2 -bottom-2 opacity-10 text-white" />
                          {loan.logoUrl ? (
                            <LazyImage src={loan.logoUrl} alt={loan.name} className="w-16 h-16 object-contain" />
@@ -273,10 +333,24 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
                          )}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{loan.name}</h3>
-                      <p className="text-sm text-slate-400 mb-6 flex-1">{loan.bonusText || loan.badges?.join(' • ')}</p>
-                      <a href={loan.masterPartnerUrl || loan.rawAffiliateUrl || '#'} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-emerald-500/30">
+                      
+    <div className="flex-1 mb-6 flex flex-col gap-2">
+      <p className="text-sm text-slate-400 font-medium">{loan.bonusText || loan.badges?.join(' • ')}</p>
+      {loan.benefits && loan.benefits.length > 0 && (
+        <ul className="space-y-1.5 mt-2">
+          {loan.benefits.slice(0, 2).map((b: string, i: number) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="line-clamp-2">{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  
+                      <button onClick={() => setSelectedPlatform(loan)} className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors border border-emerald-500/30">
                         Apply For Loan <ArrowRight className="w-4 h-4" />
-                      </a>
+                      </button>
                     </div>
                   ))}
                   {platforms.filter(p => p.category === 'Loans' && p.isActive).length === 0 && (
@@ -331,6 +405,13 @@ export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: Gam
       </main>
 
       
+    
+      {selectedPlatform && (
+        <PlatformDetailsModal
+          platform={selectedPlatform}
+          onClose={() => setSelectedPlatform(null)}
+        />
+      )}
     </div>
   );
 };

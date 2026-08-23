@@ -38,8 +38,8 @@ export const BrandArticlePage: React.FC<{
 
   useEffect(() => {
     if (!platform) return;
-    const title = `${platform.name} Promo Code 2026 - ${platform.bonusText || '500% Bonus'} | BonusPromoCode`;
-    const desc = `Claim the best ${platform.name} promo code for ${geoContext.country}. Get ${localizedBonus} instantly. Read our complete review, payment methods, and withdrawal speed.`;
+    const title = platform.metaTitle || `${platform.name} Promo Code 2026 - ${platform.bonusText || '500% Bonus'} | BonusPromoCode`;
+    const desc = platform.metaDescription || `Claim the best ${platform.name} promo code for ${geoContext.country}. Get ${localizedBonus} instantly. Read our complete review, payment methods, and withdrawal speed.`;
     const canonical = `https://bonuspromocode.in/brands/${slug}`;
     const ogImage = typeof platform.logoUrl === 'string' && platform.logoUrl.startsWith('data:') ? '' : `https://bonuspromocode.in${platform.logoUrl}`;
     
@@ -96,7 +96,62 @@ export const BrandArticlePage: React.FC<{
               </div>
 
               <article className="prose prose-invert prose-slate prose-lg max-w-none prose-h4:text-amber-300 prose-h4:font-bold prose-h4:text-2xl prose-h4:mt-10 prose-h4:mb-4 prose-p:text-slate-300 prose-p:leading-relaxed prose-strong:text-white">
-                <h4>{content.promoTitle}</h4>
+                              {/* Financial Platform Specific Details */}
+              {(platform.benefits || platform.whomToSell || platform.howItWorks) && (
+                <div className="space-y-10 mb-10 border-b border-slate-800/80 pb-10">
+                  {platform.benefits && platform.benefits.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-bold text-white flex items-center gap-2"><CheckCircle className="w-6 h-6 text-emerald-500" /> Offer Benefits</h3>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 p-0 m-0 list-none">
+                        {platform.benefits.map((b, i) => (
+                          <li key={i} className="flex items-start gap-3 bg-slate-800/30 p-3 rounded-lg border border-slate-700/50 m-0">
+                            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                            <span className="text-slate-300 text-sm leading-relaxed">{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {platform.whomToSell && platform.whomToSell.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-bold text-white">Eligibility Criteria</h3>
+                      <ul className="space-y-2 p-0 m-0 list-none">
+                        {platform.whomToSell.map((w, i) => (
+                          <li key={i} className="flex items-start gap-3 text-slate-300 bg-slate-800/30 p-3 rounded-lg border border-slate-700/50 m-0">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-2" />
+                            <span className="text-sm leading-relaxed">{w}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {platform.howItWorks && platform.howItWorks.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-bold text-white">How to Apply</h3>
+                      <div className="space-y-3 bg-slate-800/30 p-5 rounded-xl border border-slate-700/50">
+                        {platform.howItWorks.map((h, i) => (
+                          <p key={i} className="text-slate-300 text-sm leading-relaxed m-0">{h}</p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {platform.tnc && platform.tnc.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-bold text-white">Terms & Conditions</h3>
+                      <div className="space-y-2 text-sm text-slate-400 bg-slate-800/20 p-5 rounded-xl border border-slate-800">
+                        {platform.tnc.map((t, i) => (
+                          <p key={i} className={t === 'DOs' ? 'text-emerald-400 font-bold mt-4 mb-2 uppercase m-0' : t === "DON'Ts" ? 'text-red-400 font-bold mt-4 mb-2 uppercase m-0' : 'leading-relaxed m-0'}>{t}</p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <h4>{content.promoTitle}</h4>
                 <p dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(content.promoContent || '', {
                     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],

@@ -166,7 +166,13 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
                   </td>
 
                   <td className="p-3.5 text-slate-300 font-mono">
-                    {p.minDeposit || 'Min $5 / ₹300'}
+                    {p.minDeposit || (
+  p.category === 'Loans' ? 'Flexible' :
+  p.category === 'Credit Cards' ? 'Check Fees' :
+  p.category === 'Bank Accounts' ? 'Zero Balance' :
+  p.category === 'Demat Accounts' ? 'Free Account' :
+  'Min $5 / ₹300'
+)}
                   </td>
 
                   <td className="p-3.5 text-right">

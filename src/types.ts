@@ -100,6 +100,12 @@ export interface GamingPlatform {
   trackingPixels?: TrackingPixelConfig;
   averageUserRating?: number;
   totalReviewsCount?: number;
+  benefits?: string[];
+  whomToSell?: string[];
+  howItWorks?: string[];
+  tnc?: string[];
+  faqs?: {q: string; a: string}[];
+  postbackKey?: string;
 }
 
 export interface CustomCoupon {

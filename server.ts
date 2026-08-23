@@ -586,7 +586,7 @@ logger.info(`Saved S2S postback for ${reqPlatform} to MySQL.`);
       pStats.registrations = (pStats.registrations || 0) + 1;
     } else if (event === 'deposit' || event === 'fd_approved' || event === 'redeposit' || event === 'firstbet') {
       pStats.deposits = (pStats.deposits || 0) + 1;
-      if (sum) pStats.revenue = (pStats.revenue || 0) + sum;
+      if (sum) pStats.revenue = (pStats.revenue || 0) + Number(sum);
     }
     triggerStatsSave();
 
