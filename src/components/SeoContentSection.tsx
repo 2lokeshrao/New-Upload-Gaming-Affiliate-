@@ -309,7 +309,7 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
 
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-800">
-                <img src={selectedPlatform.logoUrl || undefined} alt={selectedPlatform.name} className="w-16 h-16 rounded-xl object-cover bg-slate-800 border border-slate-700" />
+                <img src={selectedPlatform.logoUrl || undefined} alt={selectedPlatform.name} width="64" height="64" loading="lazy" decoding="async" className="w-16 h-16 rounded-xl object-cover bg-slate-800 border border-slate-700" />
                 <div>
                   <h2 className="text-2xl font-black text-white">{selectedPlatform.name}</h2>
                   <span className="text-emerald-400 font-bold">{selectedPlatform.bonusText || selectedPlatform.bonusTitle}</span>

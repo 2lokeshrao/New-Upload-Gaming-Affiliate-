@@ -136,6 +136,7 @@ export const Footer: React.FC<FooterProps> = ({
               }}
               className="w-10 h-10 opacity-0 bg-transparent cursor-default"
               aria-hidden="true"
+              tabIndex={-1}
             />
           </div>
       </footer>

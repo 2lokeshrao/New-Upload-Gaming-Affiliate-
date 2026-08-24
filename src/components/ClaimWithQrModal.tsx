@@ -56,6 +56,8 @@ export const ClaimWithQrModal: React.FC<ClaimWithQrModalProps> = ({
             <img 
               loading="lazy" 
               decoding="async" 
+              width="40"
+              height="40"
               src={platform.logoUrl || undefined}
               alt={platform.name}
               className="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-950 shadow-md"

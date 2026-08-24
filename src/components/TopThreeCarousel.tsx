@@ -159,7 +159,7 @@ export const TopThreeCarousel: React.FC<TopThreeProps> = ({
 
                 {/* Localized Payments based on Language / Geo */}
                 <div className="mb-6 flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] text-slate-500 font-bold flex items-center gap-1 uppercase tracking-wider">
+                  <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1 uppercase tracking-wider">
                     <Wallet className="w-3 h-3" /> {t('payment.local')}
                   </span>
                   <div className="flex gap-2 text-[10px] font-bold text-slate-300">

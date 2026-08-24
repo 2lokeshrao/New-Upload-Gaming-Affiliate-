@@ -114,7 +114,12 @@ export const Navbar: React.FC<{ platforms: GamingPlatform[]; customPages: Custom
             
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center ml-1">
-              <button onClick={() => setIsOpen(!isOpen)} className="text-slate-400 hover:text-white focus:outline-none p-1">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-slate-400 hover:text-white focus:outline-none p-1"
+                aria-label={isOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isOpen}
+              >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>

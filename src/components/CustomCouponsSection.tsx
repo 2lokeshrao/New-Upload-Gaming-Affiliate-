@@ -117,6 +117,7 @@ export const CustomCouponsSection: React.FC<CustomCouponsSectionProps> = ({ coup
                   target="_blank"
                   rel="noreferrer"
                   onClick={() => onClaimCoupon(coupon)}
+                  aria-label={`Claim this coupon: ${formatLocalizedBonus(coupon.title, language)}`}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95"
                 >
                   <span>CLAIM THIS COUPON</span>

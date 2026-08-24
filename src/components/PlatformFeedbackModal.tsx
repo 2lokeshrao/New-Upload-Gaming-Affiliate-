@@ -71,6 +71,8 @@ export const PlatformFeedbackModal: React.FC<PlatformFeedbackModalProps> = ({
           <img 
             loading="lazy" 
             decoding="async" 
+            width="48"
+            height="48"
             src={platform.logoUrl || undefined}
             alt={platform.name}
             className="w-12 h-12 rounded-xl object-cover border border-slate-700 bg-slate-950"
