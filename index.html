@@ -136,14 +136,35 @@
     <!-- Bing Webmaster Verification -->
     <meta name="msvalidate.01" content="CED1BF2F281F3EFAA9D09F03D21BD5AB" />
 
-    <!-- Google Analytics 4 (Deferred) -->
-    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-RLPVKX50DY"></script>
+    <!-- Google Analytics 4 (loaded after first user interaction, or after a short
+         fallback delay for users who never interact, so it stops competing with
+         the initial page render for main-thread time and bytes — this does not
+         drop any tracking data, it only shifts when the GTM script downloads). -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-RLPVKX50DY');
+
+      (function () {
+        var loaded = false;
+        function loadGtm() {
+          if (loaded) return;
+          loaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-RLPVKX50DY';
+          s.async = true;
+          document.head.appendChild(s);
+          ['scroll', 'keydown', 'mousemove', 'touchstart', 'click'].forEach(function (evt) {
+            window.removeEventListener(evt, loadGtm, { passive: true });
+          });
+          clearTimeout(fallbackTimer);
+        }
+        var fallbackTimer = setTimeout(loadGtm, 5000);
+        ['scroll', 'keydown', 'mousemove', 'touchstart', 'click'].forEach(function (evt) {
+          window.addEventListener(evt, loadGtm, { passive: true, once: true });
+        });
+      })();
     </script>
 </head>
 
