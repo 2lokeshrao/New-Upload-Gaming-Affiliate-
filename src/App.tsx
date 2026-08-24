@@ -3,6 +3,7 @@ import { GamingPlatform, GlobalConfig, AnalyticsStats, TrackLog, UserGeo, SubPar
 import { injectFaqSchemaInHead, injectGoogleSiteVerification, injectSeoTags } from './utils/seo';
 import { TopBanner } from './components/TopBanner';
 import { HeroSection } from './components/HeroSection';
+import { TopThreeCarousel } from './components/TopThreeCarousel';
 import { SocialMediaBar } from './components/SocialMediaBar';
 import { Sparkles, Users, Mail } from 'lucide-react';
 import { TopLoadingBar } from './components/TopLoadingBar';
@@ -36,7 +37,6 @@ const ArticlesHubPage = lazy(() => import('./components/ArticlesHubPage').then(m
 const PwaInstallModal = lazy(() => import('./components/PwaInstallModal').then(m => ({ default: m.PwaInstallModal })));
 const ReferFriendModal = lazy(() => import('./components/ReferFriendModal').then(m => ({ default: m.ReferFriendModal })));
 const OfferGrid = lazy(() => import('./components/OfferGrid').then(m => ({ default: m.OfferGrid })));
-const TopThreeCarousel = lazy(() => import('./components/TopThreeCarousel').then(m => ({ default: m.TopThreeCarousel })));
 
 const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
 const SeoContentSection = lazy(() => import('./components/SeoContentSection').then(m => ({ default: m.SeoContentSection })));
@@ -723,14 +723,16 @@ export default function App() {
 
         <AdContainer slotId="hero_banner" />
 
-        {/* 3. Top 3 Featured Carousel / Cards */}
-        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>}><TopThreeCarousel
+        {/* 3. Top 3 Featured Carousel / Cards — rendered eagerly (not lazy): this is
+             above-the-fold content and is very likely the LCP element, so code-splitting
+             it forces an extra fetch+parse round trip before the browser can paint it. */}
+        <TopThreeCarousel
           platforms={activePlatforms}
           onClaimClick={handleClaimClick}
           onCopyCode={handleCopyCode}
           onOpenQrModal={(p) => setSelectedQrPlatform(p)}
           onOpenFeedbackModal={(p) => setSelectedFeedbackPlatform(p)}
-        /></Suspense>
+        />
 
         {/* Floating Action Launchers */}
         <div className="max-w-7xl mx-auto px-4 my-6 flex flex-wrap items-center justify-center gap-3">
