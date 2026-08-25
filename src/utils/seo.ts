@@ -151,7 +151,7 @@ export function injectSeoTags(title: string, description: string, canonicalUrl: 
   }
   linkCanonical.setAttribute('href', canonicalUrl);
 
-  // Open Graph
+  // Open Graph Title
   let ogTitle = document.querySelector('meta[property="og:title"]');
   if (!ogTitle) {
     ogTitle = document.createElement('meta');
@@ -160,6 +160,7 @@ export function injectSeoTags(title: string, description: string, canonicalUrl: 
   }
   ogTitle.setAttribute('content', title);
 
+  // Open Graph Description
   let ogDesc = document.querySelector('meta[property="og:description"]');
   if (!ogDesc) {
     ogDesc = document.createElement('meta');
@@ -168,6 +169,7 @@ export function injectSeoTags(title: string, description: string, canonicalUrl: 
   }
   ogDesc.setAttribute('content', description);
 
+  // Open Graph URL
   let ogUrl = document.querySelector('meta[property="og:url"]');
   if (!ogUrl) {
     ogUrl = document.createElement('meta');
@@ -175,6 +177,49 @@ export function injectSeoTags(title: string, description: string, canonicalUrl: 
     document.head.appendChild(ogUrl);
   }
   ogUrl.setAttribute('content', canonicalUrl);
+
+  // Open Graph Type
+  let ogType = document.querySelector('meta[property="og:type"]');
+  if (!ogType) {
+    ogType = document.createElement('meta');
+    ogType.setAttribute('property', 'og:type');
+    document.head.appendChild(ogType);
+  }
+  ogType.setAttribute('content', 'website');
+
+  // Open Graph Site Name
+  let ogSiteName = document.querySelector('meta[property="og:site_name"]');
+  if (!ogSiteName) {
+    ogSiteName = document.createElement('meta');
+    ogSiteName.setAttribute('property', 'og:site_name');
+    document.head.appendChild(ogSiteName);
+  }
+  ogSiteName.setAttribute('content', 'Bonus Promo Code');
+
+  // Twitter Card Meta Tags
+  let twitterCard = document.querySelector('meta[name="twitter:card"]');
+  if (!twitterCard) {
+    twitterCard = document.createElement('meta');
+    twitterCard.setAttribute('name', 'twitter:card');
+    document.head.appendChild(twitterCard);
+  }
+  twitterCard.setAttribute('content', ogImage ? 'summary_large_image' : 'summary');
+
+  let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+  if (!twitterTitle) {
+    twitterTitle = document.createElement('meta');
+    twitterTitle.setAttribute('name', 'twitter:title');
+    document.head.appendChild(twitterTitle);
+  }
+  twitterTitle.setAttribute('content', title);
+
+  let twitterDesc = document.querySelector('meta[name="twitter:description"]');
+  if (!twitterDesc) {
+    twitterDesc = document.createElement('meta');
+    twitterDesc.setAttribute('name', 'twitter:description');
+    document.head.appendChild(twitterDesc);
+  }
+  twitterDesc.setAttribute('content', description);
 
   if (ogImage) {
     let metaOgImage = document.querySelector('meta[property="og:image"]');
@@ -184,7 +229,100 @@ export function injectSeoTags(title: string, description: string, canonicalUrl: 
       document.head.appendChild(metaOgImage);
     }
     metaOgImage.setAttribute('content', ogImage);
+
+    let metaTwitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (!metaTwitterImage) {
+      metaTwitterImage = document.createElement('meta');
+      metaTwitterImage.setAttribute('name', 'twitter:image');
+      document.head.appendChild(metaTwitterImage);
+    }
+    metaTwitterImage.setAttribute('content', ogImage);
   }
+}
+
+export type SeoCategoryType = 'gaming' | 'finance' | 'crypto' | 'articles' | 'all';
+
+export interface CategoryMetadata {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  ogImage: string;
+  keywords: string;
+}
+
+/**
+ * Generates dynamic SEO metadata for different categories (Gaming, Finance, Crypto, Articles).
+ */
+export function getCategoryMetadata(category: SeoCategoryType, countryName: string = 'Global'): CategoryMetadata {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://bonuspromocode.in';
+  
+  switch (category) {
+    case 'gaming':
+      return {
+        title: `Top Verified Gaming & Casino Promo Codes 2026 (${countryName}) | 100% Guaranteed Bonuses`,
+        description: `Compare official VIP gaming promo codes, up to 500% deposit matches, and free spins for 1Win, Mostbet, Stake & more in ${countryName}. Verified daily.`,
+        canonicalUrl: `${baseUrl}/#offers`,
+        ogImage: `${baseUrl}/og-gaming.png`,
+        keywords: 'gaming promo code, casino bonus code, 1win promo code, mostbet promo code, free spins 2026'
+      };
+
+    case 'finance':
+      return {
+        title: `Finance Hub: Virtual Cards, Personal Loans & Banking Solutions (${countryName})`,
+        description: `Explore instant approval virtual cards, low-interest personal loans, digital credit lines, and web hosting offers in ${countryName}.`,
+        canonicalUrl: `${baseUrl}/banking/best-virtual-cards-for-gaming`,
+        ogImage: `${baseUrl}/og-finance.png`,
+        keywords: 'virtual cards, instant personal loan, credit cards, payment solutions, digital banking'
+      };
+
+    case 'crypto':
+      return {
+        title: `Crypto Hub: Best Crypto Exchanges, USDT Withdrawals & VIP Rakeback (${countryName})`,
+        description: `Fast USDT & Bitcoin withdrawal tutorials, lowest trading fee crypto exchanges (Binance, Bybit), and anonymous crypto gaming guide for ${countryName}.`,
+        canonicalUrl: `${baseUrl}/crypto/binance-usdt-withdrawal-guide`,
+        ogImage: `${baseUrl}/og-crypto.png`,
+        keywords: 'crypto withdrawal, binance usdt guide, bybit bonus, crypto exchange, crypto casino'
+      };
+
+    case 'articles':
+      return {
+        title: `Exclusive Guides, Strategies & Reviews 2026 | Bonus Promo Code Articles`,
+        description: `Read in-depth reviews, bonus wagering strategies, loan approval guides, and step-by-step crypto withdrawal tutorials.`,
+        canonicalUrl: `${baseUrl}/articles`,
+        ogImage: `${baseUrl}/og-articles.png`,
+        keywords: 'gaming guides, promo code reviews, deposit strategies, financial articles'
+      };
+
+    default:
+      return {
+        title: `100% Guaranteed Bonus Promo Codes & VIP Offers (2026) | BonusPromoCode`,
+        description: `Claim tested & verified 2026 welcome bonus codes, up to 500% deposit bonus, free spins, instant personal loans, and virtual cards.`,
+        canonicalUrl: `${baseUrl}/`,
+        ogImage: `${baseUrl}/og-image.png`,
+        keywords: 'bonus promo code, casino promo codes, financial offers, crypto bonuses'
+      };
+  }
+}
+
+/**
+ * Injects dynamic meta tags into the DOM head for categories (Gaming, Finance, Crypto, Articles)
+ * so that shared links render full Open Graph and Twitter card cards with correct rich snippets.
+ */
+export function injectCategoryMetaTags(category: SeoCategoryType, countryName: string = 'Global', customOgImage?: string) {
+  if (typeof document === 'undefined') return;
+  const meta = getCategoryMetadata(category, countryName);
+  const ogImg = customOgImage || meta.ogImage;
+  
+  injectSeoTags(meta.title, meta.description, meta.canonicalUrl, ogImg);
+
+  // Inject / update keywords meta tag
+  let keywordsMeta = document.querySelector('meta[name="keywords"]');
+  if (!keywordsMeta) {
+    keywordsMeta = document.createElement('meta');
+    keywordsMeta.setAttribute('name', 'keywords');
+    document.head.appendChild(keywordsMeta);
+  }
+  keywordsMeta.setAttribute('content', meta.keywords);
 }
 
 

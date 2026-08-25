@@ -1,11 +1,12 @@
 // Force HMR invalidation
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GamingPlatform, UserGeo } from '../types';
 import { Star, CheckCircle2, ShieldCheck, Copy, ExternalLink, Flame, Sparkles, Users, QrCode, MessageSquare, Wallet } from 'lucide-react';
 import { UrgencyTimer } from './UrgencyTimer';
 import { AdContainer } from './AdContainer';
 import { useLanguage } from '../i18n/LanguageContext';
 import { formatLocalizedBonus } from '../utils/currency';
+import { injectCategoryMetaTags } from '../utils/seo';
 
 
 interface OfferGridProps {
@@ -41,10 +42,61 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
     !topPlatformsIds.has(p.id)
   );
   
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'gaming' | 'finance' | 'crypto'>('all');
+
+  // Inject category-specific meta tags when switching category tabs for shareable dynamic previews
+  useEffect(() => {
+    const countryName = geo?.country || (geo?.countryCode === 'IN' ? 'India' : geo?.countryCode === 'BR' ? 'Brazil' : 'Global');
+    injectCategoryMetaTags(selectedCategory, countryName);
+  }, [selectedCategory, geo]);
+
+  const isFinancePlatform = (p: GamingPlatform) => {
+    const cat = (p.category || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+    return cat.includes('loan') || 
+           cat.includes('card') || 
+           cat.includes('bank') || 
+           cat.includes('demat') || 
+           cat.includes('invest') || 
+           cat.includes('hosting') || 
+           cat.includes('finance') ||
+           name.includes('hostinger') ||
+           name.includes('bharatpe') ||
+           name.includes('gromo') ||
+           name.includes('loan');
+  };
+
+  const isCryptoPlatform = (p: GamingPlatform) => {
+    const cat = (p.category || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+    return cat.includes('crypto') || 
+           cat.includes('exchange') || 
+           cat.includes('wallet') || 
+           name.includes('bybit') || 
+           name.includes('binance') || 
+           name.includes('stake');
+  };
+
+  const isGamingPlatform = (p: GamingPlatform) => {
+    const cat = (p.category || '').toLowerCase();
+    const name = (p.name || '').toLowerCase();
+    if (isFinancePlatform(p)) return false;
+    if (cat.includes('crypto exchange') || cat.includes('crypto wallet') || name.includes('bybit') || name.includes('binance') || name.includes('hostinger')) {
+      return false;
+    }
+    return true;
+  };
+
+  const filteredByCategory = activePlatforms.filter(p => {
+    if (selectedCategory === 'gaming') return isGamingPlatform(p);
+    if (selectedCategory === 'finance') return isFinancePlatform(p);
+    if (selectedCategory === 'crypto') return isCryptoPlatform(p);
+    return true;
+  });
+
   // Localized redirect logic: Prioritize specific offers based on UserGeo (e.g., India)
-  const sortedPlatforms = [...activePlatforms].sort((a, b) => {
+  const sortedPlatforms = [...filteredByCategory].sort((a, b) => {
     if (geo?.countryCode === 'IN') {
-      // Prioritize platforms that might support UPI (just as an example logic, we'll boost '1win' and 'parimatch')
       const aIsLocal = a.name.toLowerCase().includes('1win') || a.name.toLowerCase().includes('parimatch') || a.name.toLowerCase().includes('melbet');
       const bIsLocal = b.name.toLowerCase().includes('1win') || b.name.toLowerCase().includes('parimatch') || b.name.toLowerCase().includes('melbet');
       
@@ -72,7 +124,7 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
 
   return (
     <section id="offers-list" className="py-12 px-4 max-w-7xl mx-auto scroll-mt-20">
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-4 border-b border-slate-800 pb-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold uppercase mb-2">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
@@ -84,8 +136,52 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
         </div>
         <div className="text-slate-400 text-xs font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Showing {activePlatforms.length} Active Verified Partners</span>
+          <span>Showing {sortedPlatforms.length} Active Verified Partners</span>
         </div>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div className="flex flex-wrap items-center gap-2 mb-8">
+        <button
+          onClick={() => setSelectedCategory('all')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            selectedCategory === 'all'
+              ? 'bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20'
+              : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
+          }`}
+        >
+          🔥 All Verified Offers ({activePlatforms.length})
+        </button>
+        <button
+          onClick={() => setSelectedCategory('gaming')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            selectedCategory === 'gaming'
+              ? 'bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/20'
+              : 'bg-slate-900 text-slate-400 hover:text-amber-400 hover:bg-slate-800 border border-slate-800'
+          }`}
+        >
+          🎰 Gaming Brands ({activePlatforms.filter(isGamingPlatform).length})
+        </button>
+        <button
+          onClick={() => setSelectedCategory('finance')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            selectedCategory === 'finance'
+              ? 'bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-400/20'
+              : 'bg-slate-900 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 border border-slate-800'
+          }`}
+        >
+          💳 Finance Hub ({activePlatforms.filter(isFinancePlatform).length})
+        </button>
+        <button
+          onClick={() => setSelectedCategory('crypto')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            selectedCategory === 'crypto'
+              ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-400/20'
+              : 'bg-slate-900 text-slate-400 hover:text-cyan-400 hover:bg-slate-800 border border-slate-800'
+          }`}
+        >
+          ⚡ Crypto ({activePlatforms.filter(isCryptoPlatform).length})
+        </button>
       </div>
 
       

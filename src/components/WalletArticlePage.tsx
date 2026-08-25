@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { GamingPlatform, CustomPage, GlobalConfig } from '../types';
 import { Wallet, Bitcoin, Zap, ArrowRight, ShieldCheck, ChevronRight, Home, CreditCard, Landmark } from 'lucide-react';
 import { UserGeo } from '../types';
+import { injectSeoTags } from '../utils/seo';
 
 export const WalletArticlePage: React.FC<{ path: string; geo: any; platforms: GamingPlatform[]; customPages: CustomPage[]; config: GlobalConfig }> = ({ path, geo, platforms, customPages, config }) => {
   // Parse URL: e.g., /wallets/astropay-deposit-guide
@@ -26,27 +27,23 @@ export const WalletArticlePage: React.FC<{ path: string; geo: any; platforms: Ga
   if (slug.includes('stake')) brandName = 'Stake';
 
   const isCrypto = walletName === 'Binance' || slug.includes('crypto');
+  const countryName = geo?.countryName || geo?.countryCode || 'Global';
 
   // Dynamic SEO Text
   const title = isCrypto 
-    ? `Best Crypto Exchange for Betting Withdrawals: ${walletName} Guide`
-    : `How to Create a ${walletName} Account & Deposit on ${brandName}`;
+    ? `Best Crypto Exchange for Betting Withdrawals: ${walletName} Guide (${countryName})`
+    : `How to Create a ${walletName} Account & Deposit on ${brandName} (${countryName})`;
     
   const description = isCrypto
-    ? `Learn how to withdraw your betting winnings instantly via ${walletName}. Avoid bank blocks and get the lowest fees.`
-    : `Complete guide on using ${walletName} for instant online gaming deposits on ${brandName}. Get your ${walletName} account today and claim your welcome bonus.`;
+    ? `Learn how to withdraw your betting winnings instantly via ${walletName} in ${countryName}. Avoid bank blocks and get the lowest fees.`
+    : `Complete guide on using ${walletName} for instant online gaming deposits on ${brandName} in ${countryName}. Get your ${walletName} account today and claim your welcome bonus.`;
 
   // Update SEO Meta Tags
   useEffect(() => {
-    document.title = title;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', description);
-  }, [title, description]);
+    const canonical = `https://bonuspromocode.in${path}`;
+    const ogImg = isCrypto ? 'https://bonuspromocode.in/og-crypto.png' : 'https://bonuspromocode.in/og-finance.png';
+    injectSeoTags(title, description, canonical, ogImg);
+  }, [title, description, path, isCrypto]);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();

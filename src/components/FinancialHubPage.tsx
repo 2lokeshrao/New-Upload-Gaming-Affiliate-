@@ -5,33 +5,29 @@ import { CreditCard, CheckCircle, Landmark, Banknote, ShieldCheck, ArrowRight, H
 import { UserGeo } from '../types';
 import { LazyImage } from './LazyImage';
 import { PlatformDetailsModal } from './PlatformDetailsModal';
+import { injectCategoryMetaTags, injectSeoTags } from '../utils/seo';
 
 export const FinancialHubPage: React.FC<{ path: string; geo: any; platforms: GamingPlatform[]; customPages: CustomPage[]; config: GlobalConfig }> = ({ path, geo, platforms, customPages, config }) => {
   // Determine primary intent based on URL
   const [selectedPlatform, setSelectedPlatform] = useState<GamingPlatform | null>(null);
   const isLoans = path.includes('/loans');
   const isCards = path.includes('/virtual-cards') || path.includes('/credit-card');
+  const countryName = geo?.countryName || geo?.countryCode || 'Global';
   
   const title = isLoans 
-    ? "Instant Personal Loans & Short-Term Financing"
+    ? `Instant Personal Loans & Short-Term Financing (${countryName}) | Bonus Promo Code`
     : isCards 
-      ? "Best Virtual & Credit Cards for iGaming"
-      : "iGaming Financial & Payment Hub";
+      ? `Best Virtual & Credit Cards for iGaming (${countryName}) | Bonus Promo Code`
+      : `iGaming Financial & Payment Hub (${countryName}) | Bonus Promo Code`;
       
   const description = isLoans
-    ? "Need quick funds? Explore our verified partners offering instant personal loans, digital credit lines, and fast approvals with minimal documentation."
-    : "Discover the most reliable global virtual cards and local credit cards for seamless, secure, and instant deposits on top gaming platforms.";
+    ? `Need quick funds? Explore our verified partners offering instant personal loans, digital credit lines, and fast approvals with minimal documentation in ${countryName}.`
+    : `Discover the most reliable global virtual cards and local credit cards for seamless, secure, and instant deposits on top gaming platforms in ${countryName}.`;
 
   useEffect(() => {
-    document.title = `${title} | BonusPromoCode.in`;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-      metaDesc = document.createElement('meta');
-      metaDesc.setAttribute('name', 'description');
-      document.head.appendChild(metaDesc);
-    }
-    metaDesc.setAttribute('content', description);
-  }, [title, description]);
+    const canonical = `https://bonuspromocode.in${path}`;
+    injectSeoTags(title, description, canonical, 'https://bonuspromocode.in/og-finance.png');
+  }, [title, description, path]);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();

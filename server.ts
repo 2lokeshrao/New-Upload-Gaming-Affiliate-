@@ -1086,6 +1086,24 @@ Sitemap: https://bonuspromocode.in/sitemap.xml
 `);
 });
 
+app.get('/llms.txt', (req, res) => {
+  res.type('text/markdown; charset=utf-8');
+  res.send(`# Bonus Promo Code
+
+> Official VIP Gaming & Financial Offers Portal with 100% Guaranteed Welcome Bonus Codes, Cashback & Free Spins for 2026.
+
+## Main Services
+- [Home](https://bonuspromocode.in/): Verified gaming promo codes, welcome bonuses, and financial offers.
+- [Reviews](https://bonuspromocode.in/#offers): Comprehensive platform reviews and bonus eligibility details.
+- [Sub-Partner Application](https://bonuspromocode.in/#subpartner): Multi-tier affiliate network onboarding.
+
+## Top Featured Platforms
+- [1Win](https://bonuspromocode.in/review/1win): 500% Welcome Bonus with promo code MAXBOOST500.
+- [Mostbet](https://bonuspromocode.in/review/mostbet): 125% Deposit Bonus + 250 Free Spins.
+- [Stake](https://bonuspromocode.in/review/stake): 200% Deposit Match with VIP Rakeback.
+`);
+});
+
 // SEO Helper function
 // to dynamically inject sitemap.xml route
 function injectSitemapRoute(app: express.Application) {
@@ -1453,12 +1471,47 @@ async function startServer() {
           }
         }
 
+        // Check if viewing Category / Hub Routes (Gaming, Finance, Crypto, Articles)
+        let ogImg = 'https://bonuspromocode.in/og-image.png';
+        const countryName = geo?.country || (geo?.countryCode === 'IN' ? 'India' : geo?.countryCode === 'BR' ? 'Brazil' : 'Global');
+
+        if (req.path.startsWith('/banking') || req.path.startsWith('/loans') || req.path.startsWith('/finance') || req.path.startsWith('/personal-loan') || req.path.startsWith('/home-loan')) {
+          seoTitle = `Finance Hub: Virtual Cards, Personal Loans & Banking Solutions (${countryName}) | Bonus Promo Code`;
+          seoDesc = `Explore instant approval virtual cards, low-interest personal loans, digital credit lines, and web hosting offers in ${countryName}. Verified & fast approval.`;
+          ogImg = 'https://bonuspromocode.in/og-finance.png';
+        } else if (req.path.startsWith('/crypto') || req.path.startsWith('/wallets')) {
+          seoTitle = `Crypto Hub: Best Crypto Exchanges, USDT Withdrawals & VIP Rakeback (${countryName}) | Bonus Promo Code`;
+          seoDesc = `Fast USDT & Bitcoin withdrawal tutorials, lowest trading fee crypto exchanges (Binance, Bybit), and anonymous crypto gaming guide for ${countryName}.`;
+          ogImg = 'https://bonuspromocode.in/og-crypto.png';
+        } else if (req.path === '/articles') {
+          seoTitle = `Exclusive Guides, Strategies & Reviews 2026 | Bonus Promo Code Articles`;
+          seoDesc = `Read in-depth reviews, bonus wagering strategies, loan approval guides, and step-by-step crypto withdrawal tutorials.`;
+          ogImg = 'https://bonuspromocode.in/og-articles.png';
+        }
+
         // Replace SEO Tags in HTML
         html = html.replace(/<title>.*?<\/title>/, `<title>${seoTitle}</title>`);
         if (!html.includes('<meta name="description"')) {
            html = html.replace('<head>', `<head>\n<meta name="description" content="${seoDesc}">`);
         } else {
            html = html.replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${seoDesc}">`);
+        }
+
+        // Inject OpenGraph and Twitter Meta Tags for Social Media crawlers (WhatsApp, Facebook, Twitter, Telegram, LinkedIn)
+        const socialMeta = `
+<meta property="og:title" content="${seoTitle.replace(/"/g, '&quot;')}" />
+<meta property="og:description" content="${seoDesc.replace(/"/g, '&quot;')}" />
+<meta property="og:url" content="https://bonuspromocode.in${req.path}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Bonus Promo Code" />
+<meta property="og:image" content="${ogImg}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${seoTitle.replace(/"/g, '&quot;')}" />
+<meta name="twitter:description" content="${seoDesc.replace(/"/g, '&quot;')}" />
+<meta name="twitter:image" content="${ogImg}" />`;
+
+        if (!html.includes('<meta property="og:title"')) {
+          html = html.replace('</head>', `${socialMeta}\n</head>`);
         }
 
         const safePlatforms = statePlatforms.map(p => ({ ...p }));

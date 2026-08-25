@@ -136,10 +136,7 @@
     <!-- Bing Webmaster Verification -->
     <meta name="msvalidate.01" content="CED1BF2F281F3EFAA9D09F03D21BD5AB" />
 
-    <!-- Google Analytics 4 (loaded after first user interaction, or after a short
-         fallback delay for users who never interact, so it stops competing with
-         the initial page render for main-thread time and bytes — this does not
-         drop any tracking data, it only shifts when the GTM script downloads). -->
+    <!-- Google Analytics 4 (Loaded strictly on first user interaction or long idle) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -158,33 +155,43 @@
           ['scroll', 'keydown', 'mousemove', 'touchstart', 'click'].forEach(function (evt) {
             window.removeEventListener(evt, loadGtm, { passive: true });
           });
-          clearTimeout(fallbackTimer);
         }
-        var fallbackTimer = setTimeout(loadGtm, 5000);
+        // Load on user interaction
         ['scroll', 'keydown', 'mousemove', 'touchstart', 'click'].forEach(function (evt) {
           window.addEventListener(evt, loadGtm, { passive: true, once: true });
         });
+        // Fallback after 10s or when completely idle
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(function() { setTimeout(loadGtm, 8000); });
+        } else {
+          setTimeout(loadGtm, 9000);
+        }
       })();
     </script>
 </head>
 
   <body class="bg-slate-950 text-slate-100 font-sans antialiased">
-        <div id="root">
-<style>
-  body { background-color: #020617; margin: 0; font-family: system-ui, sans-serif; }
-  .skel-nav { height: 80px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
-  .skel-nav-brand { width: 160px; height: 32px; background: #1e293b; border-radius: 8px; }
-  .skel-hero { height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-  .skel-title { width: 250px; height: 40px; background: #1e293b; border-radius: 12px; margin-bottom: 16px; }
-  .skel-sub { width: 350px; max-width: 100%; height: 24px; background: #1e293b; border-radius: 6px; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-  .skel-animate { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-</style>
-<div class="skel-animate" style="width: 100%; min-height: 100vh;">
-  <div class="skel-nav"><div class="skel-nav-brand"></div></div>
-  <div class="skel-hero"><div class="skel-title"></div><div class="skel-sub"></div></div>
-</div>
-</div>
+    <div id="root">
+      <div style="min-height: 100vh; background-color: #020617; color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+        <header style="width: 100%; height: 70px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #9333ea, #db2777); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff;">⚡</div>
+            <span style="font-weight: 900; font-size: 18px; letter-spacing: -0.5px; color: #fff;">BONUS PROMO CODE</span>
+          </div>
+        </header>
+        <main style="width: 100%; max-width: 900px; padding: 40px 20px; text-align: center; box-sizing: border-box;">
+          <div style="display: inline-block; padding: 6px 16px; border-radius: 9999px; background: rgba(147, 51, 234, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;">
+            🔥 CYBER NEON VIP REWARDS HUB (2026 EDITION)
+          </div>
+          <h1 style="font-size: clamp(28px, 6vw, 48px); font-weight: 900; line-height: 1.15; color: #ffffff; margin: 0 0 16px 0; letter-spacing: -0.02em;">
+            Stop Wasting Money on Unverified Sites. Claim Your <span style="color: #fbbf24;">100% Guaranteed Welcome Bonuses</span>
+          </h1>
+          <p style="font-size: 16px; color: #94a3b8; max-width: 650px; margin: 0 auto 28px auto; line-height: 1.6;">
+            Verified, licensed platforms with instant withdrawals, high RTP slots, and up to $1,500 + 500% first deposit bonuses.
+          </p>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

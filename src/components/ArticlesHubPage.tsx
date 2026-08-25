@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { CustomPage, GlobalConfig, AIArticle, GamingPlatform } from '../types';
 import { ChevronRight, FileText, Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { injectCategoryMetaTags } from '../utils/seo';
 
 export const ArticlesHubPage: React.FC<{ 
   customPages?: CustomPage[];
@@ -10,7 +11,7 @@ export const ArticlesHubPage: React.FC<{
 }> = ({ customPages = [], platforms = [], config }) => {
 
   useEffect(() => {
-    document.title = "All Articles & Loans | BonusPromoCode";
+    injectCategoryMetaTags('articles', 'Global');
   }, []);
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
