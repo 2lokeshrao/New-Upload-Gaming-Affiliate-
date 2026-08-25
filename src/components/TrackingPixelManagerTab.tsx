@@ -76,9 +76,9 @@ export const TrackingPixelManagerTab: React.FC<TrackingPixelManagerTabProps> = (
             <Target className="w-4 h-4 text-amber-400" />
             <span>Conversion Analytics & Pixel Injection</span>
           </div>
-          <h2 className="text-xl font-black text-white">Tracking Pixel Manager</h2>
+          <h2 className="text-xl font-black text-white">Tracking Pixels & Custom Code Manager</h2>
           <p className="text-xs text-slate-300">
-            Inject Facebook Pixel (Meta), Google Analytics (GA4), or custom scripts globally or per individual gaming platform to accurately measure registration conversions.
+            Inject Facebook Pixel (Meta), Google Analytics (GA4), or ANY custom HTML/Scripts globally in the &lt;head&gt; and &lt;body&gt; of your website.
           </p>
         </div>
       </div>
@@ -133,13 +133,24 @@ export const TrackingPixelManagerTab: React.FC<TrackingPixelManagerTabProps> = (
           </div>
 
           <div className="sm:col-span-3">
-            <label className="block text-xs font-bold text-slate-300 mb-1">Custom Tracking Header Script (JS Snippet)</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Custom Header HTML/Meta Tags (&lt;head&gt;)</label>
             <textarea
               rows={2}
               value={globalPixels.customHeaderScript || ''}
               onChange={e => setGlobalPixels({ ...globalPixels, customHeaderScript: e.target.value })}
-              placeholder="<script>console.log('Conversion tracked');</script>"
+              placeholder="<meta name='google-site-verification' content='...' />\n<script>console.log('Custom Header loaded');</script>"
               className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-emerald-300 font-mono text-xs focus:border-purple-500 outline-none"
+            />
+          </div>
+
+          <div className="sm:col-span-3 mt-2">
+            <label className="block text-xs font-bold text-slate-300 mb-1">Custom Body HTML/Scripts (&lt;body&gt;)</label>
+            <textarea
+              rows={2}
+              value={globalPixels.customBodyScript || ''}
+              onChange={e => setGlobalPixels({ ...globalPixels, customBodyScript: e.target.value })}
+              placeholder="<!-- Added just before closing </body> -->\n<script>console.log('Custom Body Script loaded');</script>"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-amber-300 font-mono text-xs focus:border-purple-500 outline-none"
             />
           </div>
         </div>

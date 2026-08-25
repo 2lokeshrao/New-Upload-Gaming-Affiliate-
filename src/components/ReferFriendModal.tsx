@@ -23,7 +23,8 @@ export const ReferFriendModal: React.FC<ReferFriendModalProps> = ({ onClose }) =
         
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10"
+          aria-label="Close modal"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -41,6 +42,7 @@ export const ReferFriendModal: React.FC<ReferFriendModalProps> = ({ onClose }) =
             <input 
               type="text" 
               readOnly 
+              aria-label="Referral link"
               value={referralLink}
               className="bg-transparent border-none outline-none text-slate-300 text-sm flex-1 px-3 w-full"
             />

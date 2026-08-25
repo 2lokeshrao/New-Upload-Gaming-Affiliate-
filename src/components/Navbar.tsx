@@ -202,8 +202,12 @@ export const Navbar: React.FC<{ platforms: GamingPlatform[]; customPages: Custom
           
           <div className="flex items-center gap-3">
             <div className="relative group hidden sm:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1">
-              <GlobeIcon className="w-4 h-4 text-slate-400 mr-1" />
+              <label htmlFor="language-select" className="sr-only">Select Language</label>
+              <GlobeIcon className="w-4 h-4 text-slate-400 mr-1" aria-hidden="true" />
               <select 
+                id="language-select"
+                name="language"
+                aria-label="Select Language"
                 className="bg-transparent text-xs text-slate-200 outline-none cursor-pointer appearance-none pr-4"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}

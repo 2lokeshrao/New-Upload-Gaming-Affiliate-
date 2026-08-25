@@ -71,6 +71,7 @@ export const SubPartnerModal: React.FC<SubPartnerModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close modal"
           className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
@@ -180,8 +181,11 @@ export const SubPartnerModal: React.FC<SubPartnerModalProps> = ({
               </div>
 
               <div>
-                <label className="block font-extrabold text-slate-300 mb-1">Your Traffic Source</label>
+                <label htmlFor="subpartner-traffic-source" className="block font-extrabold text-slate-300 mb-1">Your Traffic Source</label>
                 <select
+                  id="subpartner-traffic-source"
+                  name="trafficSource"
+                  aria-label="Your Traffic Source"
                   value={trafficSource}
                   onChange={e => setTrafficSource(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:border-amber-500 outline-none"

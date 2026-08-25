@@ -56,6 +56,7 @@ export interface TrackingPixelConfig {
   googleAnalyticsId?: string;
   tiktokPixelId?: string;
   customHeaderScript?: string;
+  customBodyScript?: string;
 }
 
 export interface PlatformFeedback {

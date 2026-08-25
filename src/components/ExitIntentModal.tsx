@@ -136,6 +136,7 @@ export const ExitIntentModal: React.FC<ExitIntentModalProps> = ({
         {/* Close button */}
         <button
           onClick={() => setIsOpen(false)}
+          aria-label="Close modal"
           className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />

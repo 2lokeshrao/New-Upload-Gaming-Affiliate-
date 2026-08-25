@@ -1497,6 +1497,18 @@ async function startServer() {
            html = html.replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${seoDesc}">`);
         }
 
+        // Inject Custom Header & Body HTML from GlobalConfig
+        let customHeaderInjection = '';
+        let customBodyInjection = '';
+        if (stateConfig.globalTrackingPixels) {
+          if (stateConfig.globalTrackingPixels.customHeaderScript) {
+             customHeaderInjection = stateConfig.globalTrackingPixels.customHeaderScript + '\n';
+          }
+          if (stateConfig.globalTrackingPixels.customBodyScript) {
+             customBodyInjection = stateConfig.globalTrackingPixels.customBodyScript + '\n';
+          }
+        }
+
         // Inject OpenGraph and Twitter Meta Tags for Social Media crawlers (WhatsApp, Facebook, Twitter, Telegram, LinkedIn)
         const socialMeta = `
 <meta property="og:title" content="${seoTitle.replace(/"/g, '&quot;')}" />
@@ -1512,6 +1524,15 @@ async function startServer() {
 
         if (!html.includes('<meta property="og:title"')) {
           html = html.replace('</head>', `${socialMeta}\n</head>`);
+        }
+        
+        // Inject Custom Header Scripts
+        if (customHeaderInjection) {
+          html = html.replace('</head>', `${customHeaderInjection}</head>`);
+        }
+        // Inject Custom Body Scripts
+        if (customBodyInjection) {
+          html = html.replace('</body>', `${customBodyInjection}</body>`);
         }
 
         const safePlatforms = statePlatforms.map(p => ({ ...p }));

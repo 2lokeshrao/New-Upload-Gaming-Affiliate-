@@ -79,7 +79,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     { id: 'analytics', label: 'Analytics & Click Counter', icon: BarChart2, iconColor: 'text-cyan-400' },
     { id: 'seo', label: 'SEO Content Manager & Health', icon: Search, iconColor: 'text-emerald-400' },
     { id: 'feedback', label: 'Feedback Approval Queue', icon: MessageSquare, iconColor: 'text-amber-400', badgeCount: (config.approvedFeedbacks?.filter(f => !f.isApproved)?.length || 0) },
-    { id: 'pixels', label: 'Tracking Pixel Manager', icon: Target, iconColor: 'text-cyan-400' },
+    { id: 'pixels', label: 'Tracking Pixels & Custom HTML', icon: Target, iconColor: 'text-cyan-400' },
     { id: 'sitemap', label: 'Automated Sitemap Generator', icon: Globe, iconColor: 'text-purple-400' },
     { id: 'push', label: 'FCM Push Notification Broadcast', icon: Bell, iconColor: 'text-amber-400' },
     { id: 'abtest', label: 'A/B Testing Dashboard', icon: Sliders, iconColor: 'text-emerald-400' },
