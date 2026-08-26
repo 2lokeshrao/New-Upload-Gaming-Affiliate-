@@ -274,7 +274,16 @@ async function loadState() {
         const bIdx = typeof b.orderIndex === 'number' ? b.orderIndex : 999;
         return aIdx - bIdx;
       });
-      statePlatforms = loaded;
+      // Sanitize any double encoded logoUrls that might be in DB
+      statePlatforms = loaded.map(p => {
+        let logoUrl = p.logoUrl;
+        if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/svg+xml;base64,ZGF0')) {
+          try {
+            logoUrl = Buffer.from(logoUrl.replace('data:image/svg+xml;base64,', ''), 'base64').toString('utf8');
+          } catch(e) {}
+        }
+        return { ...p, logoUrl };
+      });
     } else {
       logger.info("Database empty: Seeding initial platforms...");
       for (const p of initialPlatforms) {
@@ -481,6 +490,51 @@ function getGeoFromRequest(req: Request) {
 // Bot Detection Regex for Cloaking
 const BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|AdsBot-Google|Mediapartners-Google|Lighthouse/i;
 
+// Geo-Targeting & Link Routing Logic
+function getFilteredPlatforms(req: Request, geo: any) {
+  const userAgent = req.headers['user-agent'] || '';
+  const bot = BOT_USER_AGENTS.test(userAgent);
+  const countryCode = geo?.countryCode || '';
+
+  return statePlatforms.filter(p => {
+    // Backward compatibility for platforms created before this feature
+    if (p.isGlobal === undefined && p.defaultLink === undefined && (!p.allowedCountries || p.allowedCountries.length === 0)) return true;
+    
+    // Bots see everything to allow crawling links
+    if (bot) return true;
+    
+    // VISIBILITY RULE
+    if (p.isGlobal) return true;
+    if (p.allowedCountries && p.allowedCountries.includes(countryCode)) return true;
+    
+    return false;
+  }).map(p => {
+    let finalLink = p.rawAffiliateUrl;
+    
+    // Default fallback
+    if (p.defaultLink) {
+        finalLink = p.defaultLink;
+    }
+    
+    // LINK ROUTING RULE
+    if (!bot && p.geoLinks && Array.isArray(p.geoLinks)) {
+        const geoLink = p.geoLinks.find(g => g.country === countryCode);
+        if (geoLink && geoLink.link) {
+            finalLink = geoLink.link;
+        }
+    }
+    
+    let logoUrl = p.logoUrl;
+    if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/svg+xml;base64,ZGF0')) {
+      try {
+        logoUrl = Buffer.from(logoUrl.replace('data:image/svg+xml;base64,', ''), 'base64').toString('utf8');
+      } catch(e) { }
+    }
+
+    return { ...p, rawAffiliateUrl: finalLink, logoUrl };
+  });
+}
+
 // Auth Middleware
 function verifyJwtToken(req: Request, res: Response, next: Function) {
   const authHeader = req.headers.authorization;
@@ -681,7 +735,7 @@ app.get('/api/data', (req, res) => {
   stateStats.totalVisits += 1; triggerStatsSave();
   const geo = getGeoFromRequest(req);
 
-  const safePlatforms = statePlatforms.map(p => ({ ...p }));
+  const safePlatforms = getFilteredPlatforms(req, geo);
 
   const safeConfig = {
     heroHeadline: stateConfig.heroHeadline,
@@ -789,7 +843,17 @@ app.patch('/api/admin/sub-partners/:id', verifyJwtToken, (req, res) => {
 app.post('/api/admin/platforms', verifyJwtToken, (req, res) => {
   const { platforms } = req.body;
   if (Array.isArray(platforms)) {
-    statePlatforms = platforms; saveState();
+    // Sanitize any double encoded logoUrls
+    statePlatforms = platforms.map(p => {
+      let logoUrl = p.logoUrl;
+      if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/svg+xml;base64,ZGF0')) {
+        try {
+          logoUrl = Buffer.from(logoUrl.replace('data:image/svg+xml;base64,', ''), 'base64').toString('utf8');
+        } catch(e) {}
+      }
+      return { ...p, logoUrl };
+    });
+    saveState();
     return res.json({ success: true, platforms: statePlatforms });
   }
   return res.status(400).json({ error: 'Invalid platform data array' });
@@ -1535,7 +1599,7 @@ async function startServer() {
           html = html.replace('</body>', `${customBodyInjection}</body>`);
         }
 
-        const safePlatforms = statePlatforms.map(p => ({ ...p }));
+        const safePlatforms = getFilteredPlatforms(req, geo);
         
         const safeConfig = {
           heroHeadline: stateConfig.heroHeadline, heroSubheading: stateConfig.heroSubheading,

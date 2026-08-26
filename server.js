@@ -1177,7 +1177,16 @@ async function loadState() {
         const bIdx = typeof b.orderIndex === "number" ? b.orderIndex : 999;
         return aIdx - bIdx;
       });
-      statePlatforms = loaded;
+      statePlatforms = loaded.map((p) => {
+        let logoUrl = p.logoUrl;
+        if (typeof logoUrl === "string" && logoUrl.startsWith("data:image/svg+xml;base64,ZGF0")) {
+          try {
+            logoUrl = Buffer.from(logoUrl.replace("data:image/svg+xml;base64,", ""), "base64").toString("utf8");
+          } catch (e) {
+          }
+        }
+        return { ...p, logoUrl };
+      });
     } else {
       logger.info("Database empty: Seeding initial platforms...");
       for (const p of initialPlatforms) {
@@ -1345,6 +1354,37 @@ function getGeoFromRequest(req) {
   };
 }
 var BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|AdsBot-Google|Mediapartners-Google|Lighthouse/i;
+function getFilteredPlatforms(req, geo) {
+  const userAgent = req.headers["user-agent"] || "";
+  const bot = BOT_USER_AGENTS.test(userAgent);
+  const countryCode = geo?.countryCode || "";
+  return statePlatforms.filter((p) => {
+    if (p.isGlobal === void 0 && p.defaultLink === void 0 && (!p.allowedCountries || p.allowedCountries.length === 0)) return true;
+    if (bot) return true;
+    if (p.isGlobal) return true;
+    if (p.allowedCountries && p.allowedCountries.includes(countryCode)) return true;
+    return false;
+  }).map((p) => {
+    let finalLink = p.rawAffiliateUrl;
+    if (p.defaultLink) {
+      finalLink = p.defaultLink;
+    }
+    if (!bot && p.geoLinks && Array.isArray(p.geoLinks)) {
+      const geoLink = p.geoLinks.find((g) => g.country === countryCode);
+      if (geoLink && geoLink.link) {
+        finalLink = geoLink.link;
+      }
+    }
+    let logoUrl = p.logoUrl;
+    if (typeof logoUrl === "string" && logoUrl.startsWith("data:image/svg+xml;base64,ZGF0")) {
+      try {
+        logoUrl = Buffer.from(logoUrl.replace("data:image/svg+xml;base64,", ""), "base64").toString("utf8");
+      } catch (e) {
+      }
+    }
+    return { ...p, rawAffiliateUrl: finalLink, logoUrl };
+  });
+}
 function verifyJwtToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -1493,7 +1533,7 @@ app.get("/api/data", (req, res) => {
   stateStats.totalVisits += 1;
   triggerStatsSave();
   const geo = getGeoFromRequest(req);
-  const safePlatforms = statePlatforms.map((p) => ({ ...p }));
+  const safePlatforms = getFilteredPlatforms(req, geo);
   const safeConfig = {
     heroHeadline: stateConfig.heroHeadline,
     heroSubheading: stateConfig.heroSubheading,
@@ -1582,7 +1622,16 @@ app.patch("/api/admin/sub-partners/:id", verifyJwtToken, (req, res) => {
 app.post("/api/admin/platforms", verifyJwtToken, (req, res) => {
   const { platforms } = req.body;
   if (Array.isArray(platforms)) {
-    statePlatforms = platforms;
+    statePlatforms = platforms.map((p) => {
+      let logoUrl = p.logoUrl;
+      if (typeof logoUrl === "string" && logoUrl.startsWith("data:image/svg+xml;base64,ZGF0")) {
+        try {
+          logoUrl = Buffer.from(logoUrl.replace("data:image/svg+xml;base64,", ""), "base64").toString("utf8");
+        } catch (e) {
+        }
+      }
+      return { ...p, logoUrl };
+    });
     saveState();
     return res.json({ success: true, platforms: statePlatforms });
   }
@@ -1846,6 +1895,23 @@ Disallow: /go/
 Disallow: /api/admin/
 
 Sitemap: https://bonuspromocode.in/sitemap.xml
+`);
+});
+app.get("/llms.txt", (req, res) => {
+  res.type("text/markdown; charset=utf-8");
+  res.send(`# Bonus Promo Code
+
+> Official VIP Gaming & Financial Offers Portal with 100% Guaranteed Welcome Bonus Codes, Cashback & Free Spins for 2026.
+
+## Main Services
+- [Home](https://bonuspromocode.in/): Verified gaming promo codes, welcome bonuses, and financial offers.
+- [Reviews](https://bonuspromocode.in/#offers): Comprehensive platform reviews and bonus eligibility details.
+- [Sub-Partner Application](https://bonuspromocode.in/#subpartner): Multi-tier affiliate network onboarding.
+
+## Top Featured Platforms
+- [1Win](https://bonuspromocode.in/review/1win): 500% Welcome Bonus with promo code MAXBOOST500.
+- [Mostbet](https://bonuspromocode.in/review/mostbet): 125% Deposit Bonus + 250 Free Spins.
+- [Stake](https://bonuspromocode.in/review/stake): 200% Deposit Match with VIP Rakeback.
 `);
 });
 function injectSitemapRoute(app2) {
@@ -2173,6 +2239,21 @@ async function startServer() {
             seoDesc = (article.metaDescription || article.content.substring(0, 150)).substring(0, 160);
           }
         }
+        let ogImg = "https://bonuspromocode.in/og-image.png";
+        const countryName = geo?.country || (geo?.countryCode === "IN" ? "India" : geo?.countryCode === "BR" ? "Brazil" : "Global");
+        if (req.path.startsWith("/banking") || req.path.startsWith("/loans") || req.path.startsWith("/finance") || req.path.startsWith("/personal-loan") || req.path.startsWith("/home-loan")) {
+          seoTitle = `Finance Hub: Virtual Cards, Personal Loans & Banking Solutions (${countryName}) | Bonus Promo Code`;
+          seoDesc = `Explore instant approval virtual cards, low-interest personal loans, digital credit lines, and web hosting offers in ${countryName}. Verified & fast approval.`;
+          ogImg = "https://bonuspromocode.in/og-finance.png";
+        } else if (req.path.startsWith("/crypto") || req.path.startsWith("/wallets")) {
+          seoTitle = `Crypto Hub: Best Crypto Exchanges, USDT Withdrawals & VIP Rakeback (${countryName}) | Bonus Promo Code`;
+          seoDesc = `Fast USDT & Bitcoin withdrawal tutorials, lowest trading fee crypto exchanges (Binance, Bybit), and anonymous crypto gaming guide for ${countryName}.`;
+          ogImg = "https://bonuspromocode.in/og-crypto.png";
+        } else if (req.path === "/articles") {
+          seoTitle = `Exclusive Guides, Strategies & Reviews 2026 | Bonus Promo Code Articles`;
+          seoDesc = `Read in-depth reviews, bonus wagering strategies, loan approval guides, and step-by-step crypto withdrawal tutorials.`;
+          ogImg = "https://bonuspromocode.in/og-articles.png";
+        }
         html = html.replace(/<title>.*?<\/title>/, `<title>${seoTitle}</title>`);
         if (!html.includes('<meta name="description"')) {
           html = html.replace("<head>", `<head>
@@ -2180,7 +2261,38 @@ async function startServer() {
         } else {
           html = html.replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${seoDesc}">`);
         }
-        const safePlatforms = statePlatforms.map((p) => ({ ...p }));
+        let customHeaderInjection = "";
+        let customBodyInjection = "";
+        if (stateConfig.globalTrackingPixels) {
+          if (stateConfig.globalTrackingPixels.customHeaderScript) {
+            customHeaderInjection = stateConfig.globalTrackingPixels.customHeaderScript + "\n";
+          }
+          if (stateConfig.globalTrackingPixels.customBodyScript) {
+            customBodyInjection = stateConfig.globalTrackingPixels.customBodyScript + "\n";
+          }
+        }
+        const socialMeta = `
+<meta property="og:title" content="${seoTitle.replace(/"/g, "&quot;")}" />
+<meta property="og:description" content="${seoDesc.replace(/"/g, "&quot;")}" />
+<meta property="og:url" content="https://bonuspromocode.in${req.path}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Bonus Promo Code" />
+<meta property="og:image" content="${ogImg}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${seoTitle.replace(/"/g, "&quot;")}" />
+<meta name="twitter:description" content="${seoDesc.replace(/"/g, "&quot;")}" />
+<meta name="twitter:image" content="${ogImg}" />`;
+        if (!html.includes('<meta property="og:title"')) {
+          html = html.replace("</head>", `${socialMeta}
+</head>`);
+        }
+        if (customHeaderInjection) {
+          html = html.replace("</head>", `${customHeaderInjection}</head>`);
+        }
+        if (customBodyInjection) {
+          html = html.replace("</body>", `${customBodyInjection}</body>`);
+        }
+        const safePlatforms = getFilteredPlatforms(req, geo);
         const safeConfig = {
           heroHeadline: stateConfig.heroHeadline,
           heroSubheading: stateConfig.heroSubheading,

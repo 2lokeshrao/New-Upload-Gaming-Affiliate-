@@ -93,6 +93,11 @@ export interface GamingPlatform {
   category: string;
   bonusTitle?: string;
   minDeposit?: string;
+  // Geo-Targeting & Multi-Link fields
+  defaultLink?: string;
+  isGlobal?: boolean;
+  geoLinks?: { country: string; link: string }[];
+  allowedCountries?: string[];
   // Independent SEO Fields per platform
   metaTitle?: string;
   metaDescription?: string;

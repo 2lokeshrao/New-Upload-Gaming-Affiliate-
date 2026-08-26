@@ -16,6 +16,11 @@ import { CustomPageManagerTab } from './CustomPageManagerTab';
 
 import { FooterManagerTab } from './FooterManagerTab';
 import { Target, Globe, MessageSquare, QrCode, Bell, Sliders, FileText } from 'lucide-react';
+import * as countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
+countries.registerLocale(enLocale);
+const allCountriesMap = countries.getNames('en');
+const allCountriesList = Object.keys(allCountriesMap).map(code => ({ code, name: allCountriesMap[code] })).sort((a, b) => a.name.localeCompare(b.name));
 
 interface AdminPanelProps {
   token: string;
@@ -836,6 +841,90 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         style={{ backgroundColor: '#020617' }}
                       />
                       <p className="text-[10px] text-slate-500 mt-2">Use Markdown to format. If left empty, the programmatic SEO template will be used for this brand's page.</p>
+                    </div>
+
+                    {/* Geo-Targeting & Multi-Link Routing Sub-section */}
+                    <div className="sm:col-span-2 p-3.5 bg-slate-900/90 border border-blue-500/30 rounded-xl space-y-4 mt-2 mb-2">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span className="font-extrabold text-xs text-blue-300 flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5 text-blue-400" />
+                          Advanced Geo-Targeting & Multi-Link Routing
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-slate-400 font-bold mb-1">Default Affiliate Link (Global Fallback)</label>
+                          <input
+                            type="text"
+                            value={editingPlatform.defaultLink || ''}
+                            onChange={e => setEditingPlatform({ ...editingPlatform, defaultLink: e.target.value, isGlobal: !!e.target.value })}
+                            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-medium focus:border-blue-500 outline-none"
+                            placeholder="https://global-affiliate-link.com (If filled, platform is globally visible)"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-slate-400 font-bold mb-1">Allowed Countries (Multi-select)</label>
+                          <div className="max-h-40 overflow-y-auto bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-wrap gap-2">
+                            {allCountriesList.map(country => {
+                              const isSelected = (editingPlatform.allowedCountries || []).includes(country.code);
+                              return (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => {
+                                    const current = editingPlatform.allowedCountries || [];
+                                    if (isSelected) {
+                                      setEditingPlatform({ ...editingPlatform, allowedCountries: current.filter(c => c !== country.code) });
+                                    } else {
+                                      setEditingPlatform({ ...editingPlatform, allowedCountries: [...current, country.code] });
+                                    }
+                                  }}
+                                  className={`px-2 py-1 text-[10px] rounded-full border ${isSelected ? 'bg-blue-500/20 border-blue-500 text-blue-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                                >
+                                  {country.name} ({country.code})
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {(editingPlatform.allowedCountries && editingPlatform.allowedCountries.length > 0) && (
+                          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
+                            <label className="block text-amber-400 font-bold mb-1 text-xs">Country-Specific Affiliate Links</label>
+                            {editingPlatform.allowedCountries.map(countryCode => {
+                              const countryName = allCountriesMap[countryCode] || countryCode;
+                              const geoLinks = editingPlatform.geoLinks || [];
+                              const currentLink = geoLinks.find(g => g.country === countryCode)?.link || '';
+                              
+                              return (
+                                <div key={countryCode} className="flex flex-col sm:flex-row gap-2">
+                                  <div className="sm:w-1/3 flex items-center bg-slate-900 px-3 rounded-lg border border-slate-800 text-slate-300 text-xs font-bold">
+                                    {countryName} ({countryCode})
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={currentLink}
+                                    onChange={e => {
+                                      const newLinks = [...geoLinks];
+                                      const idx = newLinks.findIndex(g => g.country === countryCode);
+                                      if (idx >= 0) {
+                                        newLinks[idx].link = e.target.value;
+                                      } else {
+                                        newLinks.push({ country: countryCode, link: e.target.value });
+                                      }
+                                      setEditingPlatform({ ...editingPlatform, geoLinks: newLinks });
+                                    }}
+                                    className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white font-medium focus:border-amber-500 outline-none text-xs"
+                                    placeholder={`Specific affiliate link for ${countryName}...`}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* SEO Metadata Sub-section inside Platform Add/Edit */}
