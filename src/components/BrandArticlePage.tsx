@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
-import React, { Suspense, useEffect, useMemo } from 'react';
-const Markdown = React.lazy(() => import('react-markdown'));
+import React, { useEffect, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { GamingPlatform, UserGeo, CustomPage, GlobalConfig } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getGeoContext, getSeoTemplates } from '../utils/seoTemplates';
@@ -151,29 +152,60 @@ export const BrandArticlePage: React.FC<{
                 </div>
               )}
               
-              <h4>{content.promoTitle}</h4>
-                <p dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content.promoContent || '', {
-                    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
-                  })
-                }} />
-                
-                <h4>{content.paymentTitle}</h4>
-                <p dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content.paymentContent || '', {
-                    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
-                  })
-                }} />
-                
-                <h4>{content.legalTitle}</h4>
-                <p dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content.legalContent || '', {
-                    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
-                  })
-                }} />
+              {platform.reviewContent ? (
+                <div className="mb-10">
+                  <ReactMarkdown
+                    rehypePlugins={[rehypeSanitize]}
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-3xl font-black text-white mt-6 mb-4 leading-tight" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-2xl font-black text-white mt-6 mb-3 border-b border-slate-800 pb-2" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-xl font-bold text-white mt-4 mb-2" {...props} />,
+                      p: ({node, ...props}) => <p className="text-slate-300 leading-relaxed mb-4 text-base" {...props} />,
+                      a: ({node, ...props}) => (
+                        <a 
+                          className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 decoration-emerald-500/40 hover:decoration-emerald-400 transition-colors" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          {...props} 
+                        />
+                      ),
+                      ul: ({node, ...props}) => <ul className="list-disc list-outside pl-6 mb-4 space-y-1.5 text-slate-300" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal list-outside pl-6 mb-4 space-y-1.5 text-slate-300" {...props} />,
+                      li: ({node, ...props}) => <li className="leading-relaxed" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-emerald-500 pl-4 py-2 italic bg-slate-950/60 text-slate-400 mb-4 rounded-r-lg" {...props} />
+                    }}
+                  >
+                    {platform.reviewContent}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <>
+                  <h4>{content.promoTitle}</h4>
+                  <p dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(content.promoContent || '', {
+                      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
+                      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                    })
+                  }} />
+                  
+                  <h4>{content.paymentTitle}</h4>
+                  <p dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(content.paymentContent || '', {
+                      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
+                      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                    })
+                  }} />
+                  
+                  <h4>{content.legalTitle}</h4>
+                  <p dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(content.legalContent || '', {
+                      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4'],
+                      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                    })
+                  }} />
+                </>
+              )}
               </article>
 
               {/* CTA Area */}

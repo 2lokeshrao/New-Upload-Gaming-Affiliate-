@@ -51,7 +51,7 @@ export interface AbTestConfig {
 }
 
 export interface TrackingPixelConfig {
-  platformId: string;
+  platformId?: string;
   facebookPixelId?: string;
   googleAnalyticsId?: string;
   tiktokPixelId?: string;
@@ -217,6 +217,8 @@ export interface AnalyticsStats {
   totalSubPartnerApps: number;
   platformStats: Record<string, { clicks: number; copies: number; registrations?: number; deposits?: number; revenue?: number }>;
   dailyTrends?: { date: string; clicks: number; conversions: number }[];
+  totalOutboundClicks?: number;
+  activeUsersLive?: number;
 }
 
 export interface TrackLog {

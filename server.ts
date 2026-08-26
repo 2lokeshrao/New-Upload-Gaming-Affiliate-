@@ -1,17 +1,4 @@
 
-
-// Suppress noisy transient Firebase gRPC errors in Node.js
-const originalConsoleError = console.error;
-console.error = function (...args) {
-  const logStr = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
-  if (logStr.includes('@firebase/firestore') && logStr.includes('UNAVAILABLE: read ECONNRESET')) {
-    return; // Suppress harmless grpc connection resets
-  }
-  originalConsoleError.apply(console, args);
-};
-
-
-
 import DOMPurify from 'isomorphic-dompurify';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
@@ -103,9 +90,13 @@ app.use((req, res, next) => {
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 2000,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Never rate limit admin operations, health checks or internal assets
+    return req.path.startsWith('/api/admin') || req.path === '/api/health' || req.path.startsWith('/api/cdn');
+  }
 });
 app.use(generalLimiter);
 
@@ -201,7 +192,8 @@ async function getMysqlPool() {
 
 async function setDoc(coll: string, docId: string, data: any) {
   try {
-    await fsSetDoc(doc(firestoreDb, coll, docId), data);
+    const cleanData = JSON.parse(JSON.stringify(data));
+    await fsSetDoc(doc(firestoreDb, coll, docId), cleanData);
   } catch (e) {
     logger.error(`Error setting doc ${coll}/${docId}:`, e);
   }
@@ -508,34 +500,48 @@ const BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhi
 function getFilteredPlatforms(req: Request, geo: any) {
   const userAgent = req.headers['user-agent'] || '';
   const bot = BOT_USER_AGENTS.test(userAgent);
-  const countryCode = geo?.countryCode || '';
+  const countryCode = (geo?.countryCode || 'IN').toUpperCase();
 
   return statePlatforms.filter(p => {
-    // Backward compatibility for platforms created before this feature
-    if (p.isGlobal === undefined && p.defaultLink === undefined && (!p.allowedCountries || p.allowedCountries.length === 0)) return true;
-    
     // Bots see everything to allow crawling links
     if (bot) return true;
-    
-    // VISIBILITY RULE
-    if (p.isGlobal) return true;
-    if (p.allowedCountries && p.allowedCountries.includes(countryCode)) return true;
-    
-    return false;
-  }).map(p => {
-    let finalLink = p.rawAffiliateUrl;
-    
-    // Default fallback
-    if (p.defaultLink) {
-        finalLink = p.defaultLink;
+
+    // Allowed Countries Check
+    const allowed = (p.allowedCountries || []).map(c => c.toUpperCase());
+    if (allowed.length > 0) {
+      // If specific countries are selected, only show to visitors from those countries
+      if (allowed.includes(countryCode)) return true;
+      // If visitor is outside allowed countries, only show if a global fallback is explicitly enabled
+      if (p.isGlobal && (p.defaultLink || p.rawAffiliateUrl)) return true;
+      return false;
     }
     
-    // LINK ROUTING RULE
-    if (!bot && p.geoLinks && Array.isArray(p.geoLinks)) {
-        const geoLink = p.geoLinks.find(g => g.country === countryCode);
-        if (geoLink && geoLink.link) {
-            finalLink = geoLink.link;
-        }
+    // If no allowedCountries restricted list, platform is globally visible
+    return true;
+  }).map(p => {
+    let finalLink = '';
+    
+    // Priority 1: Match visitor's country from geoLinks
+    if (p.geoLinks && Array.isArray(p.geoLinks)) {
+      const match = p.geoLinks.find(g => g.country?.toUpperCase() === countryCode);
+      if (match && match.link && match.link.trim()) {
+        finalLink = match.link.trim();
+      }
+    }
+    
+    // Priority 2: Default / Global Link
+    if (!finalLink) {
+      if (p.defaultLink && p.defaultLink.trim()) {
+        finalLink = p.defaultLink.trim();
+      } else if (p.rawAffiliateUrl && p.rawAffiliateUrl.trim()) {
+        finalLink = p.rawAffiliateUrl.trim();
+      }
+    }
+
+    // Priority 3: First available geo link
+    if (!finalLink && p.geoLinks && Array.isArray(p.geoLinks) && p.geoLinks.length > 0) {
+      const firstValid = p.geoLinks.find(g => g.link && g.link.trim());
+      if (firstValid) finalLink = firstValid.link.trim();
     }
     
     let logoUrl = p.logoUrl;
@@ -545,7 +551,12 @@ function getFilteredPlatforms(req: Request, geo: any) {
       } catch(e) { }
     }
 
-    return { ...p, rawAffiliateUrl: finalLink, logoUrl };
+    return { 
+      ...p, 
+      rawAffiliateUrl: finalLink, 
+      defaultLink: p.defaultLink || p.rawAffiliateUrl || finalLink,
+      logoUrl 
+    };
   });
 }
 
@@ -838,6 +849,10 @@ app.get('/api/admin/data', verifyJwtToken, (req, res) => {
     
     returnedStats = {
       totalVisits: Math.floor(Math.random() * 500000) + 200000,
+      totalClicks: Math.floor(Math.random() * 100000) + 50000,
+      totalPromoCopies: Math.floor(Math.random() * 30000) + 10000,
+      totalSubPartnerApps: 3,
+      platformStats: stateStats.platformStats || {},
       totalOutboundClicks: Math.floor(Math.random() * 100000) + 50000,
       activeUsersLive: Math.floor(Math.random() * 150) + 20,
       dailyTrends: [
@@ -1038,14 +1053,53 @@ app.get('/go/:slug', (req, res) => {
     return res.redirect('/');
   }
 
-  // Build the dynamic Affiliate URL with tracking parameters
-  let targetUrl = platform.rawAffiliateUrl;
-  if (clickId || sub1 || sub2) {
-    const urlObj = new URL(targetUrl);
-    if (clickId) { urlObj.searchParams.set('click_id', clickId as string); urlObj.searchParams.set('payload', clickId as string); urlObj.searchParams.set('sub3', clickId as string); }
-    if (sub1) urlObj.searchParams.set('sub1', sub1 as string);
-    if (sub2) urlObj.searchParams.set('sub2', sub2 as string);
-    targetUrl = urlObj.toString();
+  // Determine visitor country for multi-geo affiliate routing
+  const geo = getGeoFromRequest(req);
+  const countryCode = (geo?.countryCode || 'IN').toUpperCase();
+
+  // Resolve country-specific link first, then default/fallback link
+  let targetUrl = '';
+  if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
+    const geoMatch = platform.geoLinks.find(g => g.country?.toUpperCase() === countryCode);
+    if (geoMatch && geoMatch.link && geoMatch.link.trim()) {
+      targetUrl = geoMatch.link.trim();
+    }
+  }
+
+  if (!targetUrl) {
+    if (platform.defaultLink && platform.defaultLink.trim()) {
+      targetUrl = platform.defaultLink.trim();
+    } else if (platform.rawAffiliateUrl && platform.rawAffiliateUrl.trim()) {
+      targetUrl = platform.rawAffiliateUrl.trim();
+    }
+  }
+
+  // Fallback to first available geo link if no default is present (e.g. India-only platform accessed by proxy)
+  if (!targetUrl && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
+    const firstValid = platform.geoLinks.find(g => g.link && g.link.trim());
+    if (firstValid) targetUrl = firstValid.link.trim();
+  }
+
+  if (!targetUrl) {
+    targetUrl = '/';
+  }
+
+  // Safely build the dynamic Affiliate URL with tracking parameters
+  if (targetUrl && targetUrl !== '/' && (clickId || sub1 || sub2)) {
+    try {
+      const formatted = targetUrl.startsWith('http://') || targetUrl.startsWith('https://') ? targetUrl : `https://${targetUrl}`;
+      const urlObj = new URL(formatted);
+      if (clickId) {
+        urlObj.searchParams.set('click_id', clickId as string);
+        urlObj.searchParams.set('payload', clickId as string);
+        urlObj.searchParams.set('sub3', clickId as string);
+      }
+      if (sub1) urlObj.searchParams.set('sub1', sub1 as string);
+      if (sub2) urlObj.searchParams.set('sub2', sub2 as string);
+      targetUrl = urlObj.toString();
+    } catch (e) {
+      logger.warn('Failed to parse URL for tracking params in /go/:slug', e);
+    }
   }
 
   // Record click count
@@ -1300,7 +1354,7 @@ injectSitemapRoute(app);
 app.post('/api/generate-seo', verifyJwtToken, async (req, res) => {
   const data = { statePlatforms, stateConfig, stateSubPartners };
   try {
-    const { platformName, existingDescription } = req.body;
+    const { platformName, category, bonus, promoCode, existingDescription } = req.body;
     
     if (!platformName) {
       return res.status(400).json({ error: 'platformName is required' });
@@ -1320,7 +1374,20 @@ app.post('/api/generate-seo', verifyJwtToken, async (req, res) => {
       }
     });
 
-    const prompt = `You are an expert iGaming SEO copywriter. Generate SEO metadata (title, description, keywords) and exactly 2 FAQ entries for the gaming platform "${platformName}". Make the content sound professional, trustworthy, and engaging for affiliates and players. Focus on bonuses, withdrawals, and reliability. IMPORTANT: Keep the title strictly under 60 characters and the description strictly under 160 characters to comply with Google SEO guidelines.${existingDescription ? ' Here is existing info to build on: ' + existingDescription : ''}`;
+    const currentYear = new Date().getFullYear();
+    const prompt = `You are a world-class professional SEO copywriter. Generate tailored, high-converting, 100% unique SEO metadata (title, description, keywords) and exactly 2 FAQ entries specifically for the platform "${platformName}".
+Platform Details:
+- Category / Industry: "${category || 'Affiliate Platform'}"
+- Bonus / Offer: "${bonus || 'Standard Welcome Offer'}"
+- Promo / Referral Code: "${promoCode || 'N/A'}"
+- Current Year: ${currentYear}
+${existingDescription ? '- Existing Context: ' + existingDescription : ''}
+
+CRITICAL RULES:
+1. Title must be unique, compelling, strictly under 60 characters, and include the platform name, promo/referral code (if available), and current year ${currentYear}.
+2. Description must be punchy, highlight the real offer/service (banking/loan/casino/crypto/hosting/betting), and strictly under 160 characters.
+3. Keywords must be a comma-separated list of 4-6 specific, high-intent search queries for this platform.
+4. FAQs must answer 2 realistic user questions relevant to this specific industry/platform.`;
 
     const response = await generateWithRetry(ai, {
       model: 'gemini-3.7-flash',

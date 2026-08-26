@@ -1,5 +1,7 @@
 // Force HMR invalidation
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { GamingPlatform, CustomCoupon } from '../types';
 import { Search, CheckCircle2, Flame, Award, Tag, Ticket, X, Copy, ExternalLink } from 'lucide-react';
 
@@ -317,10 +319,33 @@ export const SeoContentSection: React.FC<SeoContentSectionProps> = ({
               </div>
 
               {selectedPlatform.reviewContent ? (
-                <div 
-                   className="prose prose-invert prose-sm max-w-none mb-8 prose-headings:text-slate-200 prose-headings:font-black prose-a:text-purple-400 prose-ul:text-slate-300" 
-                   dangerouslySetInnerHTML={{ __html: selectedPlatform.reviewContent }} 
-                />
+                <div className="prose prose-invert prose-sm max-w-none mb-8 prose-headings:text-slate-200 prose-headings:font-black prose-a:text-emerald-400 hover:prose-a:text-emerald-300 prose-a:underline prose-ul:text-slate-300">
+                  <ReactMarkdown
+                    rehypePlugins={[rehypeSanitize]}
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-xl font-black text-white mt-4 mb-2" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-lg font-black text-white mt-4 mb-2 border-b border-slate-800 pb-1" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-base font-bold text-white mt-3 mb-1.5" {...props} />,
+                      p: ({node, ...props}) => <p className="text-slate-300 leading-relaxed mb-3 text-sm" {...props} />,
+                      a: ({node, ...props}) => (
+                        <a 
+                          className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 decoration-emerald-500/40 hover:decoration-emerald-400 transition-colors" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          onClick={(e) => e.stopPropagation()} 
+                          {...props} 
+                        />
+                      ),
+                      ul: ({node, ...props}) => <ul className="list-disc list-outside pl-5 mb-3 space-y-1 text-slate-300 text-sm" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal list-outside pl-5 mb-3 space-y-1 text-slate-300 text-sm" {...props} />,
+                      li: ({node, ...props}) => <li className="leading-relaxed" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-emerald-500 pl-3 py-1 italic bg-slate-950/60 text-slate-400 mb-3 rounded-r" {...props} />
+                    }}
+                  >
+                    {selectedPlatform.reviewContent}
+                  </ReactMarkdown>
+                </div>
               ) : (
                 <div className="mb-8">
                   <h3 className="text-lg font-bold text-white mb-3">Why Choose {selectedPlatform.name}?</h3>

@@ -47,6 +47,58 @@ const truncateSeoText = (text: string | undefined, max: number) => {
   return `${truncated}...`;
 };
 
+// Smart Contextual SEO Generator tailored per platform category, bonus, and region
+export const generateSmartSeoTags = (platform: Partial<GamingPlatform>) => {
+  const name = platform.name?.trim() || 'Official Platform';
+  const code = platform.promoCode?.trim() || '';
+  const bonus = platform.bonus?.trim() || '';
+  const category = (platform.category || '').toLowerCase();
+  const desc = platform.description?.trim() || '';
+  const isIndia = platform.allowedCountries?.includes('IN') || (category.includes('indian') || desc.toLowerCase().includes('india') || desc.toLowerCase().includes('₹') || desc.toLowerCase().includes('inr'));
+  const currentYear = new Date().getFullYear();
+
+  let title = '';
+  let description = '';
+  let keywords = '';
+
+  const cleanBonus = bonus.replace(/\s+/g, ' ').trim();
+
+  if (category.includes('loan') || category.includes('advance') || category.includes('credit')) {
+    title = `${name} Instant Loan ${code ? `Referral Code ${code}` : 'Apply Online'} (${currentYear})`;
+    description = `Apply for ${name} instant paperless personal & business loans${cleanBonus ? ` - ${cleanBonus}` : ''}. Fast approval, lowest interest rates, and direct bank disbursal.`;
+    keywords = `${name.toLowerCase()} loan, ${name.toLowerCase()} apply online, instant cash loan, personal loan ${isIndia ? 'india' : ''}, ${code ? `${name.toLowerCase()} referral code ${code}` : ''}`.trim();
+  } else if (category.includes('bank') || category.includes('saving') || category.includes('finance') || category.includes('card') || category.includes('demat') || category.includes('invest')) {
+    title = `${name} ${code ? `Referral Code ${code}` : 'Exclusive Offer'} | ${cleanBonus || 'Open Account'} ${currentYear}`;
+    description = `Official ${name} offer${code ? ` using code ${code}` : ''}. ${cleanBonus || 'Zero balance account, instant activation, and cashback rewards'}. Secure paperless digital application.`;
+    keywords = `${name.toLowerCase()}, ${name.toLowerCase()} account, ${name.toLowerCase()} offers, ${name.toLowerCase()} promo code, banking perks ${currentYear}`;
+  } else if (category.includes('crypto') || category.includes('exchange') || category.includes('wallet')) {
+    title = `${name} Referral Code ${code || 'VIP'} | ${cleanBonus || 'Sign Up Bonus'} ${currentYear}`;
+    description = `Register on ${name} with verified referral code ${code || 'VIP'}. Claim ${cleanBonus || 'exclusive trading fee discounts & deposit rewards'}. Safe and instant crypto withdrawals.`;
+    keywords = `${name.toLowerCase()} referral code, ${name.toLowerCase()} promo code, ${name.toLowerCase()} sign up bonus, ${name.toLowerCase()} bonus code, crypto trading discount`;
+  } else if (category.includes('hosting') || category.includes('web') || category.includes('tech') || category.includes('domain')) {
+    title = `${name} Coupon Code ${code || 'SAVE'} | ${cleanBonus || 'Best Discount'} ${currentYear}`;
+    description = `Get the best discount on ${name}${code ? ` with promo code ${code}` : ''}. ${cleanBonus || 'Ultra-fast NVMe hosting, free SSL certificate & domain'}. Claim your deal today!`;
+    keywords = `${name.toLowerCase()} coupon code, ${name.toLowerCase()} promo code, ${name.toLowerCase()} discount voucher, ${name.toLowerCase()} web hosting deal`;
+  } else if (category.includes('cricket') || category.includes('sportsbook') || category.includes('sports') || category.includes('exchange') || category.includes('esports')) {
+    const bonusHighlight = cleanBonus || 'Welcome Bonus & Free Bets';
+    title = `${name} Promo Code ${code || 'VIP'} | ${bonusHighlight} ${currentYear}`;
+    description = `Use verified promo code ${code || 'VIP'} on ${name} to claim ${bonusHighlight}. Instant deposits, live cricket & sports odds, and fast withdrawal support.`;
+    keywords = `${name.toLowerCase()} promo code, ${name.toLowerCase()} bonus code, ${name.toLowerCase()} registration code, ${name.toLowerCase()} welcome bonus, sports betting bonus ${currentYear}, ${code}`;
+  } else {
+    // Casino / Slots / General Gaming
+    const bonusHighlight = cleanBonus || 'Welcome Bonus Package';
+    title = `${name} Promo Code ${code || 'MAXBOOST'} | ${bonusHighlight} ${currentYear}`;
+    description = `Official verified promo code for ${name}. Enter ${code || 'MAXBOOST'} on signup to unlock ${bonusHighlight}, free spins, and VIP perks with fast payouts.`;
+    keywords = `${name.toLowerCase()} promo code, ${name.toLowerCase()} bonus code, ${name.toLowerCase()} welcome bonus, ${name.toLowerCase()} voucher, online casino bonus, ${code}`;
+  }
+
+  return {
+    metaTitle: truncateSeoText(title, 60),
+    metaDescription: truncateSeoText(description, 160),
+    metaKeywords: keywords.split(',').map(s => s.trim()).filter(Boolean).join(', ')
+  };
+};
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   isDemo,
   token,
@@ -158,30 +210,66 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     e.preventDefault();
     if (!editingPlatform) return;
 
+    const effectiveDefaultLink = (editingPlatform.rawAffiliateUrl || editingPlatform.defaultLink || '').trim();
+    const hasValidGeoLinks = (editingPlatform.geoLinks || []).some(g => g.link && g.link.trim() !== '');
+
+    if (!effectiveDefaultLink && !hasValidGeoLinks) {
+      alert("Please provide at least one Affiliate URL (either the Global/Default Link or a Country-Specific Link for India / other selected countries).");
+      return;
+    }
+
+    const allowed = editingPlatform.allowedCountries || [];
+    // If specific countries are selected and default link is empty, isGlobal is false (country-restricted)
+    const isGlobal = editingPlatform.isGlobal !== undefined 
+      ? editingPlatform.isGlobal 
+      : (allowed.length === 0 || !!effectiveDefaultLink);
+
     let updated: GamingPlatform[];
 
     if (isNew) {
       const newP: GamingPlatform = {
         id: editingPlatform.id || `plat_${Date.now()}`,
-        slug: editingPlatform.slug || editingPlatform.name?.toLowerCase().replace(/\s+/g, '') || `platform_${Date.now()}`,
-        name: editingPlatform.name || 'New Gaming Site',
+        slug: (editingPlatform.slug || editingPlatform.name?.toLowerCase().replace(/[^a-z0-9]/g, '') || `platform_${Date.now()}`).trim(),
+        name: (editingPlatform.name || 'New Gaming Site').trim(),
         logoUrl: editingPlatform.logoUrl || 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=160',
         rating: editingPlatform.rating || 9.5,
         starRating: 5,
         badges: editingPlatform.badges || ['Instant Withdrawal', 'Verified'],
         bonusText: editingPlatform.bonusText || '100% Welcome Bonus',
         promoCode: editingPlatform.promoCode || 'PROMO2026',
-        rawAffiliateUrl: editingPlatform.rawAffiliateUrl || 'https://example.com',
+        rawAffiliateUrl: effectiveDefaultLink,
+        defaultLink: effectiveDefaultLink,
+        masterPartnerUrl: editingPlatform.masterPartnerUrl || '',
+        claimUrl: editingPlatform.claimUrl || '',
+        reviewContent: editingPlatform.reviewContent || '',
         isFeatured: editingPlatform.isFeatured || false,
         featuredRank: editingPlatform.featuredRank || null,
         isActive: editingPlatform.isActive !== undefined ? editingPlatform.isActive : true,
         clicksCount: 0,
         copiesCount: 0,
-        category: editingPlatform.category || 'Casino'
+        category: editingPlatform.category || 'Casino & Sports',
+        isGlobal,
+        allowedCountries: allowed,
+        geoLinks: editingPlatform.geoLinks || [],
+        metaTitle: editingPlatform.metaTitle || '',
+        metaDescription: editingPlatform.metaDescription || '',
+        metaKeywords: editingPlatform.metaKeywords || '',
+        minDeposit: editingPlatform.minDeposit || '',
+        trackingPixels: editingPlatform.trackingPixels
       };
       updated = [...platforms, newP];
     } else {
-      updated = platforms.map(p => (p.id === editingPlatform.id ? ({ ...p, ...editingPlatform } as GamingPlatform) : p));
+      updated = platforms.map(p => (p.id === editingPlatform.id ? ({
+        ...p,
+        ...editingPlatform,
+        slug: (editingPlatform.slug || p.slug || editingPlatform.name?.toLowerCase().replace(/[^a-z0-9]/g, '') || p.id).trim(),
+        name: (editingPlatform.name || p.name).trim(),
+        rawAffiliateUrl: effectiveDefaultLink,
+        defaultLink: effectiveDefaultLink,
+        isGlobal,
+        allowedCountries: allowed,
+        geoLinks: editingPlatform.geoLinks || []
+      } as GamingPlatform) : p));
     }
 
     onSavePlatforms(updated);
@@ -724,15 +812,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-400 font-bold mb-1">Raw Affiliate Redirect URL</label>
+                      <label className="block text-slate-300 font-bold mb-1 flex items-center justify-between">
+                        <span>Universal / Global Affiliate URL</span>
+                        <span className="text-[10px] text-amber-400 font-medium">Optional for Country-Specific Apps</span>
+                      </label>
                       <input
                         type="text"
-                        
-                        value={editingPlatform.rawAffiliateUrl || ''}
-                        onChange={e => setEditingPlatform({ ...editingPlatform, rawAffiliateUrl: e.target.value })}
+                        value={editingPlatform.rawAffiliateUrl || editingPlatform.defaultLink || ''}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setEditingPlatform({
+                            ...editingPlatform,
+                            rawAffiliateUrl: val,
+                            defaultLink: val,
+                            isGlobal: !!val || !(editingPlatform.allowedCountries && editingPlatform.allowedCountries.length > 0)
+                          });
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-white font-medium focus:border-purple-500 outline-none"
-                        placeholder="https://1win.pro/?p=YOUR_AFFILIATE_ID"
+                        placeholder="https://affiliate-link.com (Leave blank for India-only platforms)"
                       />
+                      <p className="text-[10px] text-slate-500 mt-1">
+                        • <strong>Worldwide Brands:</strong> Enter link here.<br />
+                        • <strong>India-Only Apps (Banking/Loans):</strong> Leave this empty & select India (IN) below.
+                      </p>
                     </div>
 
                     <div>
@@ -855,19 +957,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
 
                       <div className="space-y-3">
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1">Default Affiliate Link (Global Fallback)</label>
-                          <input
-                            type="text"
-                            value={editingPlatform.defaultLink || ''}
-                            onChange={e => setEditingPlatform({ ...editingPlatform, defaultLink: e.target.value, isGlobal: !!e.target.value })}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-medium focus:border-blue-500 outline-none"
-                            placeholder="https://global-affiliate-link.com (If filled, platform is globally visible)"
-                          />
-                        </div>
+                        {/* Mode Indicator Banner */}
+                        {editingPlatform.allowedCountries && editingPlatform.allowedCountries.length > 0 ? (
+                          !(editingPlatform.rawAffiliateUrl || editingPlatform.defaultLink) ? (
+                            <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/50 text-[11px] text-emerald-300 flex items-start gap-2">
+                              <span className="text-sm">🎯</span>
+                              <div>
+                                <span className="font-bold">Country-Restricted Mode Active (e.g. India-Only):</span>
+                                <p className="text-slate-300 mt-0.5">This platform will strictly be shown ONLY to users in the selected countries below. Visitors from other countries will not see this platform.</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-2.5 rounded-lg bg-blue-950/60 border border-blue-500/50 text-[11px] text-blue-300 flex items-start gap-2">
+                              <span className="text-sm">🌐</span>
+                              <div>
+                                <span className="font-bold">Global Mode with Geo-Routing Active:</span>
+                                <p className="text-slate-300 mt-0.5">Visitors from selected countries get their country-specific URL below, while visitors from all other countries will receive the Universal Global URL.</p>
+                              </div>
+                            </div>
+                          )
+                        ) : null}
 
+                        {/* Allowed Countries Selector */}
                         <div>
-                          <label className="block text-slate-400 font-bold mb-1">Allowed Countries (Multi-select)</label>
+                          <label className="block text-slate-300 font-bold mb-1 flex items-center justify-between">
+                            <span>Allowed Countries (Select India or other specific regions)</span>
+                            <span className="text-[10px] text-slate-500 font-normal">Leave empty for Worldwide</span>
+                          </label>
                           <div className="max-h-40 overflow-y-auto bg-slate-950 border border-slate-800 rounded-lg p-2 flex flex-wrap gap-2">
                             {allCountriesList.map(country => {
                               const isSelected = (editingPlatform.allowedCountries || []).includes(country.code);
@@ -877,13 +993,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                   type="button"
                                   onClick={() => {
                                     const current = editingPlatform.allowedCountries || [];
-                                    if (isSelected) {
-                                      setEditingPlatform({ ...editingPlatform, allowedCountries: current.filter(c => c !== country.code) });
-                                    } else {
-                                      setEditingPlatform({ ...editingPlatform, allowedCountries: [...current, country.code] });
-                                    }
+                                    const nextAllowed = isSelected 
+                                      ? current.filter(c => c !== country.code)
+                                      : [...current, country.code];
+                                    const hasGlobalLink = !!(editingPlatform.rawAffiliateUrl || editingPlatform.defaultLink);
+                                    setEditingPlatform({ 
+                                      ...editingPlatform, 
+                                      allowedCountries: nextAllowed,
+                                      isGlobal: hasGlobalLink ? true : (nextAllowed.length === 0)
+                                    });
                                   }}
-                                  className={`px-2 py-1 text-[10px] rounded-full border ${isSelected ? 'bg-blue-500/20 border-blue-500 text-blue-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                                  className={`px-2 py-1 text-[10px] rounded-full border cursor-pointer transition-colors ${isSelected ? 'bg-blue-500/20 border-blue-500 text-blue-300 font-bold' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'}`}
                                 >
                                   {country.name} ({country.code})
                                 </button>
@@ -894,7 +1014,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                         {(editingPlatform.allowedCountries && editingPlatform.allowedCountries.length > 0) && (
                           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
-                            <label className="block text-amber-400 font-bold mb-1 text-xs">Country-Specific Affiliate Links</label>
+                            <label className="block text-amber-400 font-bold mb-1 text-xs">Country-Specific Affiliate Links (Enter links for selected regions)</label>
                             {editingPlatform.allowedCountries.map(countryCode => {
                               const countryName = allCountriesMap[countryCode] || countryCode;
                               const geoLinks = editingPlatform.geoLinks || [];
@@ -939,18 +1059,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <button
                           type="button"
                           onClick={() => {
-                            const name = editingPlatform.name || 'Gaming Platform';
-                            const code = editingPlatform.promoCode || 'MAXBOOST500';
-                                                        const generatedTitle = truncateSeoText(`${name} Promo Code ${code} | 500% Deposit Bonus 2026`, 60);
-                            const generatedDesc = truncateSeoText(`Official verified promo code for ${name}. Use code ${code} during registration to claim 500% welcome bonus + 200 free spins instantly.`, 160);
+                            const tags = generateSmartSeoTags(editingPlatform);
                             setEditingPlatform({
                               ...editingPlatform,
-                              metaTitle: generatedTitle,
-                              metaDescription: generatedDesc,
-                              metaKeywords: `${name.toLowerCase()} promo code, ${name.toLowerCase()} bonus code, ${name.toLowerCase()} welcome bonus 500%, ${code}`
+                              metaTitle: tags.metaTitle,
+                              metaDescription: tags.metaDescription,
+                              metaKeywords: tags.metaKeywords
                             });
                           }}
-                          className="px-2.5 py-1 rounded bg-purple-950 border border-purple-500/40 text-purple-300 text-[11px] font-bold hover:bg-purple-900 cursor-pointer"
+                          className="px-2.5 py-1 rounded bg-purple-950 border border-purple-500/40 text-purple-300 text-[11px] font-bold hover:bg-purple-900 cursor-pointer transition-colors"
                         >
                           ✨ Auto-Generate SEO Tags
                         </button>
@@ -963,7 +1080,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             type="text"
                             value={editingPlatform.metaTitle || ''}
                             onChange={e => setEditingPlatform({ ...editingPlatform, metaTitle: e.target.value })}
-                            placeholder="e.g. 1Win Promo Code MAXBOOST500 | 500% Bonus 2026"
+                            placeholder="e.g. Brand Referral / Promo Code & Bonus Offer"
                             className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs font-medium focus:border-purple-500 outline-none"
                           />
                         </div>
@@ -974,7 +1091,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             type="text"
                             value={editingPlatform.metaKeywords || ''}
                             onChange={e => setEditingPlatform({ ...editingPlatform, metaKeywords: e.target.value })}
-                            placeholder="e.g. 1win promo code, 1win bonus code"
+                            placeholder="e.g. brand promo code, brand discount bonus"
                             className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs font-medium focus:border-purple-500 outline-none"
                           />
                         </div>
@@ -985,7 +1102,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             type="text"
                             value={editingPlatform.metaDescription || ''}
                             onChange={e => setEditingPlatform({ ...editingPlatform, metaDescription: e.target.value })}
-                            placeholder="e.g. Get official 500% deposit bonus code for 1Win..."
+                            placeholder="e.g. Verified official promo / referral offer for Brand..."
                             className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white text-xs font-medium focus:border-purple-500 outline-none"
                           />
                         </div>

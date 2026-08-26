@@ -681,8 +681,12 @@ Using the promo code **BONUS20OFF** gives you an instant 20% discount on your ho
     isActive: true,
     clicksCount: 0,
     copiesCount: 0,
-    category: "Indian Sportsbook"
-  ,
+    category: "Indian Sportsbook",
+    isGlobal: false,
+    allowedCountries: ["IN"],
+    geoLinks: [
+      { country: "IN", link: "https://record.rajaaffiliates.com/_EK9JxTwjj8IWqcfzuvZcQGNd7ZgqdRLk/1/" }
+    ],
     metaTitle: "Rajabets Promo Code RAJABOOST | Best Bonus 2026",
     metaDescription: "Use verified promo code RAJABOOST for Rajabets to claim your exclusive welcome bonus. Fast sign-up, instant withdrawals, and top rewards.",
     metaKeywords: "rajabets promo code, rajabets bonus, RAJABOOST, best rajabets promo"
@@ -706,8 +710,12 @@ Using the promo code **BONUS20OFF** gives you an instant 20% discount on your ho
     isActive: true,
     clicksCount: 0,
     copiesCount: 0,
-    category: "Sportsbook & Exchange"
-  ,
+    category: "Sportsbook & Exchange",
+    isGlobal: false,
+    allowedCountries: ["IN"],
+    geoLinks: [
+      { country: "IN", link: "https://www.dafabet.com/in/?ref=YOUR_ID" }
+    ],
     metaTitle: "Dafabet India Promo Code DAFA170 | Best Bonus 2026",
     metaDescription: "Use verified promo code DAFA170 for Dafabet India to claim your exclusive welcome bonus. Fast sign-up, instant withdrawals, and top rewards.",
     metaKeywords: "dafabet india promo code, dafabet india bonus, DAFA170, best dafabet india promo"
@@ -732,8 +740,12 @@ Using the promo code **BONUS20OFF** gives you an instant 20% discount on your ho
     isActive: true,
     clicksCount: 0,
     copiesCount: 0,
-    category: "Indian Sportsbook"
-  ,
+    category: "Indian Sportsbook",
+    isGlobal: false,
+    allowedCountries: ["IN"],
+    geoLinks: [
+      { country: "IN", link: "https://partners.10cricaffiliates.com/visit/?bta=36032&brand=10cric" }
+    ],
     metaTitle: "10CRIC Promo Code 10CRICVIP | Best Bonus 2026",
     metaDescription: "Use verified promo code 10CRICVIP for 10CRIC to claim your exclusive welcome bonus. Fast sign-up, instant withdrawals, and top rewards.",
     metaKeywords: "10cric promo code, 10cric bonus, 10CRICVIP, best 10cric promo"
@@ -758,8 +770,12 @@ Using the promo code **BONUS20OFF** gives you an instant 20% discount on your ho
     isActive: true,
     clicksCount: 0,
     copiesCount: 0,
-    category: "Sportsbook & Casino"
-  ,
+    category: "Sportsbook & Casino",
+    isGlobal: false,
+    allowedCountries: ["IN"],
+    geoLinks: [
+      { country: "IN", link: "https://che.fluxbrox.com/redirect.aspx?pid=192318&bid=1484&redirectURL=https://22link.world/" }
+    ],
     metaTitle: "22Bet India Promo Code 22MAX | Best Bonus 2026",
     metaDescription: "Use verified promo code 22MAX for 22Bet India to claim your exclusive welcome bonus. Fast sign-up, instant withdrawals, and top rewards.",
     metaKeywords: "22bet india promo code, 22bet india bonus, 22MAX, best 22bet india promo"

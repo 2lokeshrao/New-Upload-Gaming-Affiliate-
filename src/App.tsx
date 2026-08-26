@@ -272,20 +272,34 @@ export default function App() {
 
   // Live data polling for Admin
   useEffect(() => {
-    let interval;
+    let interval: any;
     if (viewingAdmin && adminToken) {
       interval = setInterval(() => {
         fetch('/api/admin/data', { headers: { Authorization: `Bearer ${adminToken}` } })
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) {
+              if (res.status === 401 || res.status === 403) return null;
+              throw new Error(`HTTP ${res.status}`);
+            }
+            return res.json();
+          })
           .then(data => {
+            if (!data) return;
             if (data.stats) setStats(data.stats);
             if (data.logs) setLogs(data.logs);
             if (data.subPartners) setSubPartners(data.subPartners);
           })
-          .catch(err => console.error("Live data error", err));
-      }, 5000);
+          .catch(err => {
+            // Non-blocking debug log for transient network blips
+            if (err?.name !== 'AbortError') {
+              console.debug("Live data polling notice:", err?.message || err);
+            }
+          });
+      }, 7000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [viewingAdmin, adminToken]);
 
 

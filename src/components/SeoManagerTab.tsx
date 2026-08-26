@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GamingPlatform } from '../types';
 import { Search, Sparkles, CheckCircle2, Save, Globe, Info } from 'lucide-react';
+import { generateSmartSeoTags } from './AdminPanel';
 
 interface SeoManagerTabProps {
   token: string;
@@ -49,12 +50,15 @@ export const SeoManagerTab: React.FC<SeoManagerTabProps> = ({ platforms, onSaveP
         },
         body: JSON.stringify({ 
           platformName: selectedPlatform.name,
+          category: selectedPlatform.category,
+          bonus: selectedPlatform.bonus,
+          promoCode: selectedPlatform.promoCode,
           existingDescription: selectedPlatform.metaDescription 
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate SEO content');
+        throw new Error('Failed to generate SEO content via API');
       }
 
       const { data } = await response.json();
@@ -86,8 +90,20 @@ export const SeoManagerTab: React.FC<SeoManagerTabProps> = ({ platforms, onSaveP
         )
       );
     } catch (error) {
-      console.error('Error generating AI SEO:', error);
-      alert('Failed to generate SEO with AI. Ensure GEMINI_API_KEY is configured in backend.');
+      console.warn('API SEO generation failed, applying smart contextual tags algorithm:', error);
+      const smartTags = generateSmartSeoTags(selectedPlatform);
+      setLocalPlatforms(prev =>
+        prev.map(p =>
+          p.id === selectedPlatformId
+            ? {
+                ...p,
+                metaTitle: smartTags.metaTitle,
+                metaDescription: smartTags.metaDescription,
+                metaKeywords: smartTags.metaKeywords
+              }
+            : p
+        )
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -241,7 +257,7 @@ export const SeoManagerTab: React.FC<SeoManagerTabProps> = ({ platforms, onSaveP
                 value={selectedPlatform.metaTitle || ''}
                 maxLength={60}
                 onChange={e => handleUpdateField('metaTitle', e.target.value)}
-                placeholder={`${selectedPlatform.name} Promo Code ${selectedPlatform.promoCode || 'MAXBOOST500'} | 500% Welcome Bonus`}
+                placeholder={generateSmartSeoTags(selectedPlatform).metaTitle}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white text-xs font-bold focus:border-purple-500 outline-none"
               />
               <p className="text-[11px] text-slate-400">
@@ -317,11 +333,11 @@ export const SeoManagerTab: React.FC<SeoManagerTabProps> = ({ platforms, onSaveP
                 </div>
 
                 <h4 className="text-base font-semibold text-blue-400 hover:underline cursor-pointer leading-tight line-clamp-2">
-                  {selectedPlatform.metaTitle || `${selectedPlatform.name} Promo Code ${selectedPlatform.promoCode || 'MAXBOOST500'} | 500% Deposit Bonus`}
+                  {selectedPlatform.metaTitle || generateSmartSeoTags(selectedPlatform).metaTitle}
                 </h4>
 
                 <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
-                  {selectedPlatform.metaDescription || `Official verified promo code for ${selectedPlatform.name}. Use code ${selectedPlatform.promoCode || 'MAXBOOST500'} to claim instant welcome bonus + free spins.`}
+                  {selectedPlatform.metaDescription || generateSmartSeoTags(selectedPlatform).metaDescription}
                 </p>
 
                 <div className="pt-2 flex items-center gap-3 text-[11px] text-slate-400 border-t border-slate-800/60 mt-2">
