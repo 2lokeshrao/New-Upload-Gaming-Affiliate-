@@ -75,6 +75,7 @@ export default function App() {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [logs, setLogs] = useState<TrackLog[]>([]);
   const [customPages, setCustomPages] = useState<CustomPage[]>(initialData.customPages || []);
+  const [isDemo, setIsDemo] = useState(false);
   const [subPartners, setSubPartners] = useState<SubPartnerApplication[]>([]);
   const [geo, setGeo] = useState<UserGeo>(initialData.geo || {
     country: 'United States',
@@ -203,6 +204,7 @@ export default function App() {
         if (data.logs) setLogs(data.logs);
         if (data.subPartners) setSubPartners(data.subPartners);
         if (data.customPages) setCustomPages(data.customPages);
+        if (data.isDemo !== undefined) setIsDemo(data.isDemo);
         if (data.geo) {
           setGeo(data.geo);
           
@@ -340,6 +342,7 @@ export default function App() {
 
   // Update Sub-Partner Status from Admin
   const handleUpdateSubPartnerStatus = async (id: string, status: 'approved' | 'contacted' | 'pending') => {
+    if (isDemo) { alert("Saving is disabled in Demo Mode"); return; }
     try {
       const res = await fetch(`/api/admin/sub-partners/${id}`, {
         method: 'PATCH',
@@ -441,6 +444,7 @@ export default function App() {
             if (adminData.logs) setLogs(adminData.logs);
             if (adminData.subPartners) setSubPartners(adminData.subPartners);
             if (adminData.customPages) setCustomPages(adminData.customPages);
+            setIsDemo(adminData.isDemo || false);
             setConfig(adminData.config);
             setPlatforms(adminData.platforms);
           }
@@ -463,6 +467,7 @@ export default function App() {
 
   // Save Platforms from Admin
   const handleSavePlatformsFromAdmin = async (updated: GamingPlatform[]) => {
+    if (isDemo) { alert("Saving is disabled in Demo Mode"); return; }
     setPlatforms(updated);
     if (!adminToken) return;
 
@@ -482,6 +487,7 @@ export default function App() {
 
   // Save Config from Admin
   const handleSaveConfigFromAdmin = async (updatedConfig: GlobalConfig) => {
+    if (isDemo) { alert("Saving is disabled in Demo Mode"); return; }
     setConfig(updatedConfig);
     if (!adminToken) return;
 
@@ -500,6 +506,7 @@ export default function App() {
   };
 
   const handleSaveCustomPagesFromAdmin = async (updatedPages: CustomPage[]) => {
+    if (isDemo) { alert("Saving is disabled in Demo Mode"); return; }
     setCustomPages(updatedPages);
     if (!adminToken) return;
 
@@ -532,6 +539,7 @@ export default function App() {
       <Suspense fallback={<div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4"><div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full"></div><p className="text-purple-400 font-bold animate-pulse">Loading Admin Control Center...</p></div>}>
         <AdminPanel
         token={adminToken}
+        isDemo={isDemo}
         onLogout={handleAdminLogout}
         platforms={platforms}
         config={config}

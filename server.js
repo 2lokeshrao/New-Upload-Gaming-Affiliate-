@@ -1016,6 +1016,14 @@ import mysql from "mysql2/promise";
 import * as Sentry from "@sentry/node";
 import winston from "winston";
 import sharp from "sharp";
+var originalConsoleError = console.error;
+console.error = function(...args) {
+  const logStr = args.map((a) => typeof a === "string" ? a : JSON.stringify(a)).join(" ");
+  if (logStr.includes("@firebase/firestore") && logStr.includes("UNAVAILABLE: read ECONNRESET")) {
+    return;
+  }
+  originalConsoleError.apply(console, args);
+};
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var logger = winston.createLogger({
@@ -1053,9 +1061,10 @@ app.use(compression({
   }
 }));
 app.disable("x-powered-by");
-var PORT = process.env.PORT || 3e3;
+var PORT = 3e3;
 var JWT_SECRET = process.env.JWT_SECRET || "affiliate_default_secure_jwt_secret_2026_key";
 var ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || "admin123456";
+var DEMO_PASSCODE = process.env.DEMO_PASSCODE || "DEMO123";
 if (!process.env.JWT_SECRET || !process.env.ADMIN_PASSCODE) {
   logger.warn("WARNING: JWT_SECRET or ADMIN_PASSCODE environment variables not provided. Using secure default fallbacks.");
 }
@@ -1395,6 +1404,9 @@ function verifyJwtToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
+    if (decoded.role === "demo" && req.method !== "GET") {
+      return res.status(403).json({ error: "Action disabled in Demo Mode." });
+    }
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired token" });
@@ -1441,6 +1453,10 @@ var handleAdminLogin = (req, res) => {
     loginAttemptTracker[clientIp] = { attempts: [], lockUntil: 0 };
     const token = jwt.sign({ role: "admin", authAt: Date.now() }, JWT_SECRET, { expiresIn: "8h" });
     return res.json({ success: true, token });
+  } else if (password === DEMO_PASSCODE) {
+    loginAttemptTracker[clientIp] = { attempts: [], lockUntil: 0 };
+    const token = jwt.sign({ role: "demo", authAt: Date.now() }, JWT_SECRET, { expiresIn: "8h" });
+    return res.json({ success: true, token, isDemo: true });
   } else {
     record.attempts.push(Date.now());
     if (record.attempts.length >= 5) {
@@ -1575,12 +1591,58 @@ app.post("/api/admin/reset-stats", verifyJwtToken, async (req, res) => {
 });
 app.get("/api/admin/data", verifyJwtToken, (req, res) => {
   const geo = getGeoFromRequest(req);
+  const isDemo = req.user?.role === "demo";
+  let returnedPlatforms = statePlatforms;
+  let returnedStats = stateStats;
+  let returnedSubPartners = stateSubPartners;
+  let returnedConfig = JSON.parse(JSON.stringify(stateConfig));
+  if (isDemo) {
+    const dummyPanelConfigs = statePlatforms.map((p) => ({
+      platformId: p.id,
+      platformName: p.name,
+      apiKey: `DEMO_KEY_${Math.floor(Math.random() * 9e5)}`,
+      partnerApiUrl: `https://api.${p.slug}.com/v1/stats`,
+      affiliateId: `DEMO_ID_${Math.floor(Math.random() * 9e3)}`,
+      postbackKey: `pb_demo_secret`,
+      syncEnabled: true,
+      lastSyncedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      stats: {
+        totalRegistrations: Math.floor(Math.random() * 5e3) + 1e3,
+        ftdCount: Math.floor(Math.random() * 2e3) + 500,
+        totalDepositsAmount: Math.floor(Math.random() * 5e4) + 1e4,
+        netGamingRevenue: Math.floor(Math.random() * 2e4) + 5e3,
+        commissionEarned: Math.floor(Math.random() * 8e3) + 1e3,
+        revSharePercent: 50
+      }
+    }));
+    returnedConfig.partnerPanelConfigs = dummyPanelConfigs;
+    returnedStats = {
+      totalVisits: Math.floor(Math.random() * 5e5) + 2e5,
+      totalOutboundClicks: Math.floor(Math.random() * 1e5) + 5e4,
+      activeUsersLive: Math.floor(Math.random() * 150) + 20,
+      dailyTrends: [
+        { date: "Aug 20", clicks: 2e3, conversions: 150 },
+        { date: "Aug 21", clicks: 2500, conversions: 180 },
+        { date: "Aug 22", clicks: 2100, conversions: 160 },
+        { date: "Aug 23", clicks: 3e3, conversions: 220 },
+        { date: "Aug 24", clicks: 3500, conversions: 280 },
+        { date: "Aug 25", clicks: 4200, conversions: 350 },
+        { date: "Aug 26", clicks: 5e3, conversions: 400 }
+      ]
+    };
+    returnedSubPartners = [
+      { id: "demo1", fullName: "Rahul Sharma", email: "rahul.s@example.com", whatsapp: "919876543210", platformId: "10cric", platformName: "10CRIC", trafficSource: "Telegram", estimatedMonthlyPlayers: "100-500", status: "approved", appliedAt: (/* @__PURE__ */ new Date()).toISOString() },
+      { id: "demo2", fullName: "Amit Patel", email: "amit@example.com", whatsapp: "919876543211", platformId: "pinup", platformName: "Pin-Up Casino", trafficSource: "YouTube", estimatedMonthlyPlayers: "500+", status: "pending", appliedAt: (/* @__PURE__ */ new Date()).toISOString() },
+      { id: "demo3", fullName: "Vikram Singh", email: "vikram@example.com", whatsapp: "919876543212", platformId: "1xbet", platformName: "1xBet", trafficSource: "SEO Blog", estimatedMonthlyPlayers: "50+", status: "approved", appliedAt: new Date(Date.now() - 864e5).toISOString() }
+    ];
+  }
   res.json({
-    platforms: statePlatforms,
-    config: stateConfig,
-    stats: stateStats,
+    isDemo,
+    platforms: returnedPlatforms,
+    config: returnedConfig,
+    stats: returnedStats,
     logs: stateTrackLogs,
-    subPartners: stateSubPartners,
+    subPartners: returnedSubPartners,
     customPages: stateCustomPages,
     geo
   });

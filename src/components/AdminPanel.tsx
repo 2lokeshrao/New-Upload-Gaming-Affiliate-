@@ -24,6 +24,7 @@ const allCountriesList = Object.keys(allCountriesMap).map(code => ({ code, name:
 
 interface AdminPanelProps {
   token: string;
+  isDemo?: boolean;
   onLogout: () => void;
   platforms: GamingPlatform[];
   config: GlobalConfig;
@@ -47,6 +48,7 @@ const truncateSeoText = (text: string | undefined, max: number) => {
 };
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
+  isDemo,
   token,
   onLogout,
   platforms,
