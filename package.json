@@ -40,7 +40,6 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.546.0",
     "mysql2": "^3.23.3",
-    "puppeteer": "^25.7.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
