@@ -7,8 +7,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, getDoc as fsGetDoc, getDocs as fsGetDocs, setDoc as fsSetDoc, updateDoc as fsUpdateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const _dirname = process.cwd();
 import jwt from 'jsonwebtoken';
 import { GoogleGenAI, Type } from '@google/genai';
 import { initialGlobalConfig, initialPlatforms, initialCustomPages } from './src/data';
@@ -70,12 +69,12 @@ app.use(compression({
 }));
 app.disable('x-powered-by');
 const PORT = 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'affiliate_default_secure_jwt_secret_2026_key';
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || 'admin123456';
-const DEMO_PASSCODE = process.env.DEMO_PASSCODE || 'DEMO123';
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
+const DEMO_PASSCODE = process.env.DEMO_PASSCODE;
 
-if (!process.env.JWT_SECRET || !process.env.ADMIN_PASSCODE) {
-  logger.warn("WARNING: JWT_SECRET or ADMIN_PASSCODE environment variables not provided. Using secure default fallbacks.");
+if (!JWT_SECRET || !ADMIN_PASSCODE || !DEMO_PASSCODE) {
+  throw new Error("CRITICAL SECURITY ERROR: JWT_SECRET, ADMIN_PASSCODE, or DEMO_PASSCODE environment variables are missing. The server cannot start securely.");
 }
 
 app.use(express.json({ limit: '50mb' }));
@@ -100,6 +99,9 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+
 
 
 
@@ -109,12 +111,12 @@ let stateConfig: GlobalConfig = { ...initialGlobalConfig };
 let stateSubPartners: SubPartnerApplication[] = [];
 let stateCustomPages: any[] = [];
 
-let statsSaveTimeout: any = null;
-function triggerStatsSave() {
-  if (statsSaveTimeout) clearTimeout(statsSaveTimeout);
-  statsSaveTimeout = setTimeout(() => {
-    setDoc('settings', 'globalStats', stateStats).catch(e => logger.error('Failed to save stats', e));
-  }, 5000);
+async function triggerStatsSave() {
+  try {
+    await setDoc('settings', 'globalStats', stateStats);
+  } catch(e) {
+    logger.error('Failed to save stats', e);
+  }
 }
 
 let stateStats: AnalyticsStats = { 
@@ -551,8 +553,9 @@ function getFilteredPlatforms(req: Request, geo: any) {
       } catch(e) { }
     }
 
+    const { apiKey, postbackKey, affiliateId, partnerApiUrl, ...safeP } = p as any;
     return { 
-      ...p, 
+      ...safeP, 
       rawAffiliateUrl: finalLink, 
       defaultLink: p.defaultLink || p.rawAffiliateUrl || finalLink,
       logoUrl 
@@ -745,6 +748,11 @@ app.get('/api/image-optimize', async (req, res) => {
   const quality = parseInt(req.query.q as string) || 75;
 
   try {
+    const allowedDomains = ['example.com', 'localhost', '127.0.0.1'];
+    const urlObj = new URL(url);
+    if (!allowedDomains.some(d => urlObj.hostname.endsWith(d))) {
+      return res.status(403).send('Forbidden: URL not in allowlist');
+    }
     const fetchRes = await fetch(url);
     if (!fetchRes.ok) throw new Error('Failed to fetch image');
     const arrayBuffer = await fetchRes.arrayBuffer();
@@ -819,7 +827,9 @@ app.get('/api/admin/data', verifyJwtToken, (req, res) => {
   const geo = getGeoFromRequest(req);
   const isDemo = (req as any).user?.role === 'demo';
 
-  let returnedPlatforms = statePlatforms;
+  let returnedPlatforms = isDemo 
+    ? statePlatforms.map(p => { const { postbackKey, apiKey, partnerApiUrl, affiliateId, ...safe } = p as any; return safe as any; })
+    : statePlatforms;
   let returnedStats = stateStats;
   let returnedSubPartners = stateSubPartners;
   let returnedConfig = JSON.parse(JSON.stringify(stateConfig)); // Deep copy to avoid mutating state
@@ -886,7 +896,8 @@ app.get('/api/admin/data', verifyJwtToken, (req, res) => {
 });
 
 // API: Submit Sub-Partner Application
-app.post('/api/sub-partners', (req, res) => {
+const subPartnerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5 });
+app.post('/api/sub-partners', subPartnerLimiter, (req, res) => {
   const { fullName, email, whatsapp, platformId, platformName, trafficSource, estimatedMonthlyPlayers } = req.body;
 
   if (!fullName || !email || !whatsapp) {
@@ -972,7 +983,9 @@ app.post('/api/admin/config', verifyJwtToken, (req, res) => {
 });
 
 // API: Track Conversion Events (Click / Copy / Spin)
-app.post('/api/track', (req, res) => {
+const trackLimiter = rateLimit({ windowMs: 1 * 60 * 1000, max: 30 });
+app.post('/api/track', trackLimiter, (req, res) => {
+  if (!req.body.eventType || !req.body.platformId) return res.status(400).json({error: 'Invalid input'});
   const { eventType, platformId } = req.body;
   const geo = getGeoFromRequest(req);
 
@@ -1535,8 +1548,8 @@ async function startServer() {
     // Find the correct dist directory regardless of working directory
     const candidates = [
       path.join(process.cwd(), 'dist'),
-      path.join(__dirname, 'dist'),
-      path.join(__dirname),
+      path.join(_dirname, 'dist'),
+      path.join(_dirname),
       process.cwd()
     ];
     const distPath = candidates.find(c => fs.existsSync(path.join(c, 'index.html')) && fs.existsSync(path.join(c, 'assets')))

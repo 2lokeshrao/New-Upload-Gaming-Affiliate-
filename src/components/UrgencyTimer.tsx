@@ -14,23 +14,26 @@ export const UrgencyTimer: React.FC<UrgencyTimerProps> = ({
   label = "OFFER EXPIRES IN:",
   variant = 'compact'
 }) => {
-  const [timeLeft, setTimeLeft] = useState({
-    minutes: initialMinutes,
-    seconds: initialSeconds
-  });
+  const getSessionExpiration = () => {
+    const sessionKey = 'urgency_timer_expires';
+    let expires = sessionStorage.getItem(sessionKey);
+    const now = Date.now();
+    if (!expires || parseInt(expires, 10) <= now) {
+      expires = (now + (initialMinutes * 60 + initialSeconds) * 1000).toString();
+      sessionStorage.setItem(sessionKey, expires);
+    }
+    const diff = Math.max(0, parseInt(expires, 10) - now);
+    return {
+      minutes: Math.floor((diff / 1000) / 60),
+      seconds: Math.floor((diff / 1000) % 60)
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(getSessionExpiration());
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { minutes: prev.minutes - 1, seconds: 59 };
-        } else {
-          // Reset timer for continuous urgency
-          return { minutes: initialMinutes, seconds: initialSeconds };
-        }
-      });
+      setTimeLeft(getSessionExpiration());
     }, 1000);
 
     return () => clearInterval(timer);

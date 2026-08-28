@@ -383,3 +383,4 @@ export const OfferGrid: React.FC<OfferGridProps> = ({
     </section>
   );
 };
+// 

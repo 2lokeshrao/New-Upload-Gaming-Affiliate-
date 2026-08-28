@@ -51,7 +51,7 @@ export const SeoManagerTab: React.FC<SeoManagerTabProps> = ({ platforms, onSaveP
         body: JSON.stringify({ 
           platformName: selectedPlatform.name,
           category: selectedPlatform.category,
-          bonus: selectedPlatform.bonus,
+          bonus: selectedPlatform.bonusText,
           promoCode: selectedPlatform.promoCode,
           existingDescription: selectedPlatform.metaDescription 
         })

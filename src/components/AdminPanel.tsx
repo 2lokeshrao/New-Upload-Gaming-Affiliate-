@@ -51,9 +51,9 @@ const truncateSeoText = (text: string | undefined, max: number) => {
 export const generateSmartSeoTags = (platform: Partial<GamingPlatform>) => {
   const name = platform.name?.trim() || 'Official Platform';
   const code = platform.promoCode?.trim() || '';
-  const bonus = platform.bonus?.trim() || '';
+  const bonus = platform.bonusText?.trim() || '';
   const category = (platform.category || '').toLowerCase();
-  const desc = platform.description?.trim() || '';
+  const desc = platform.metaDescription?.trim() || platform.reviewContent?.trim() || '';
   const isIndia = platform.allowedCountries?.includes('IN') || (category.includes('indian') || desc.toLowerCase().includes('india') || desc.toLowerCase().includes('₹') || desc.toLowerCase().includes('inr'));
   const currentYear = new Date().getFullYear();
 
@@ -115,6 +115,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onSaveCustomPages
 }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'partnerapi' | 'platforms' | 'config' | 'coupons' | 'analytics' | 'subpartners' | 'seo' | 'feedback' | 'pixels' | 'sitemap' | 'push' | 'abtest' | 'pages' | 'articles' | 'footer' | 'faqs'>('dashboard');
+  const [platformSearch, setPlatformSearch] = useState('');
+  const [platformFilter, setPlatformFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [platformSort, setPlatformSort] = useState<{field: 'rank' | 'name' | 'clicks' | 'status', direction: 'asc' | 'desc'}>({field: 'rank', direction: 'asc'});
+  const [subPartnerSort, setSubPartnerSort] = useState<{field: 'name' | 'platform' | 'players' | 'status', direction: 'asc' | 'desc'}>({field: 'players', direction: 'desc'});
+
+  const handlePlatformSort = (field: 'rank' | 'name' | 'clicks' | 'status') => {
+    if (platformSort.field === field) {
+      setPlatformSort({ field, direction: platformSort.direction === 'asc' ? 'desc' : 'asc' });
+    } else {
+      setPlatformSort({ field, direction: 'asc' });
+    }
+  };
+
+  const handleSubPartnerSort = (field: 'name' | 'platform' | 'players' | 'status') => {
+    if (subPartnerSort.field === field) {
+      setSubPartnerSort({ field, direction: subPartnerSort.direction === 'asc' ? 'desc' : 'asc' });
+    } else {
+      setSubPartnerSort({ field, direction: 'asc' });
+    }
+  };
 
   const navTabs: {
     id: typeof activeTab;
@@ -1168,21 +1188,74 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </form>
               )}
 
+              {/* Search and Filter */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+                <div className="relative flex-1 w-full">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <input
+                    type="text"
+                    value={platformSearch}
+                    onChange={(e) => setPlatformSearch(e.target.value)}
+                    placeholder="Search platforms by name..."
+                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-700 rounded-xl leading-5 bg-slate-900 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 sm:text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label className="text-slate-400 text-sm font-bold whitespace-nowrap">Status:</label>
+                  <select
+                    value={platformFilter}
+                    onChange={(e) => setPlatformFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                    className="bg-slate-900 border border-slate-700 text-slate-300 font-bold text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block p-2.5 outline-none cursor-pointer"
+                  >
+                    <option value="all">All</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">Inactive Only</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Table of Platforms */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-950 text-slate-400 uppercase font-extrabold border-b border-slate-800">
                     <tr>
-                      <th className="p-3">Rank</th>
-                      <th className="p-3">Platform</th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handlePlatformSort('rank')}>
+                        Rank {platformSort.field === 'rank' && (platformSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handlePlatformSort('name')}>
+                        Platform {platformSort.field === 'name' && (platformSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
                       <th className="p-3">Bonus & Code</th>
-                      <th className="p-3">Clicks / Copies</th>
-                      <th className="p-3">Status</th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handlePlatformSort('clicks')}>
+                        Clicks / Copies {platformSort.field === 'clicks' && (platformSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handlePlatformSort('status')}>
+                        Status {platformSort.field === 'status' && (platformSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">
-                                        {platforms.map((p, index) => (
+                                        {platforms
+                    .filter(p => {
+                      const matchesSearch = p.name.toLowerCase().includes(platformSearch.toLowerCase());
+                      const matchesFilter = platformFilter === 'all' ? true : platformFilter === 'active' ? p.isActive : !p.isActive;
+                      return matchesSearch && matchesFilter;
+                    })
+                    .sort((a, b) => {
+                      let modifier = platformSort.direction === 'asc' ? 1 : -1;
+                      if (platformSort.field === 'name') return (a.name || '').localeCompare(b.name || '') * modifier;
+                      if (platformSort.field === 'clicks') return ((b.clicksCount || 0) - (a.clicksCount || 0)) * modifier;
+                      if (platformSort.field === 'status') return (a.isActive === b.isActive ? 0 : a.isActive ? -1 : 1) * modifier;
+                      const rankA = a.featuredRank || 999;
+                      const rankB = b.featuredRank || 999;
+                      return (rankA - rankB) * modifier;
+                    })
+                    .map((p) => {
+                      const index = platforms.findIndex(pl => pl.id === p.id);
+                      return (
                       <tr key={p.id} className="hover:bg-slate-800/30">
                         <td className="p-3">
                           <div className="flex flex-col items-center gap-1 w-6">
@@ -1280,7 +1353,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           </div>
                         </td>
                       </tr>
-                    ))}
+                        );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1742,16 +1816,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-950 text-slate-400 uppercase font-extrabold border-b border-slate-800">
                     <tr>
-                      <th className="p-3">Candidate & Contact</th>
-                      <th className="p-3">Gaming Platform</th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handleSubPartnerSort('name')}>
+                        Candidate & Contact {subPartnerSort.field === 'name' && (subPartnerSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handleSubPartnerSort('platform')}>
+                        Gaming Platform {subPartnerSort.field === 'platform' && (subPartnerSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
                       <th className="p-3">Traffic Channel</th>
-                      <th className="p-3">Est. Players</th>
-                      <th className="p-3">Status</th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handleSubPartnerSort('players')}>
+                        Est. Players {subPartnerSort.field === 'players' && (subPartnerSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th className="p-3 cursor-pointer hover:text-white" onClick={() => handleSubPartnerSort('status')}>
+                        Status {subPartnerSort.field === 'status' && (subPartnerSort.direction === 'asc' ? '↑' : '↓')}
+                      </th>
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/80">
-                    {(subPartners || []).map(sub => {
+                    {[...(subPartners || [])]
+                      .sort((a, b) => {
+                        let modifier = subPartnerSort.direction === 'asc' ? 1 : -1;
+                        if (subPartnerSort.field === 'name') return (a.fullName || '').localeCompare(b.fullName || '') * modifier;
+                        if (subPartnerSort.field === 'platform') return (a.platformName || '').localeCompare(b.platformName || '') * modifier;
+                        if (subPartnerSort.field === 'players') {
+                            const playersA = parseInt((a.estimatedMonthlyPlayers || '').replace(/[^0-9]/g, '')) || 0;
+                            const playersB = parseInt((b.estimatedMonthlyPlayers || '').replace(/[^0-9]/g, '')) || 0;
+                            return (playersB - playersA) * modifier;
+                        }
+                        if (subPartnerSort.field === 'status') return (a.status || '').localeCompare(b.status || '') * modifier;
+                        return 0;
+                      })
+                      .map(sub => {
                       const cleanWhatsapp = sub.whatsapp.replace(/[^0-9]/g, '');
                       const waUrl = `https://wa.me/${cleanWhatsapp}?text=Hello%20${encodeURIComponent(sub.fullName)},%20I%20received%20your%20sub-partner%20application%20for%20${encodeURIComponent(sub.platformName)}!`;
 
