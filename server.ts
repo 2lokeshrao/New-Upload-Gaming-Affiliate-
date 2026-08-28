@@ -472,7 +472,9 @@ Format your response exactly as JSON:
 
 // Helper to detect country from IP / headers
 function getGeoFromRequest(req: Request) {
-  const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || '127.0.0.1';
+  let ipHeader = req.headers['x-forwarded-for'];
+  if (Array.isArray(ipHeader)) ipHeader = ipHeader[0];
+  const ip = (typeof ipHeader === 'string' ? ipHeader.split(',')[0] : ipHeader) || req.socket.remoteAddress || '127.0.0.1';
   const countryHeader = (req.headers['cf-ipcountry'] as string) || (req.headers['x-appengine-country'] as string);
 
   if (countryHeader && countryHeader !== 'XX') {
@@ -487,11 +489,11 @@ function getGeoFromRequest(req: Request) {
 
   // Fallback defaults
   return {
-    country: 'United States',
-    countryCode: 'US',
+    country: 'India',
+    countryCode: 'IN',
     city: 'Global Region',
     ip: ip === '::1' ? '127.0.0.1' : ip,
-    flag: '🇺🇸'
+    flag: '🇮🇳'
   };
 }
 
@@ -542,7 +544,7 @@ function getFilteredPlatforms(req: Request, geo: any) {
 
     // Priority 3: First available geo link
     if (!finalLink && p.geoLinks && Array.isArray(p.geoLinks) && p.geoLinks.length > 0) {
-      const firstValid = p.geoLinks.find(g => g.link && g.link.trim());
+      const firstValid = p.geoLinks.find(g => typeof g.link === 'string' && g.link.trim());
       if (firstValid) finalLink = firstValid.link.trim();
     }
     
@@ -1074,22 +1076,22 @@ app.get('/go/:slug', (req, res) => {
   let targetUrl = '';
   if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
     const geoMatch = platform.geoLinks.find(g => g.country?.toUpperCase() === countryCode);
-    if (geoMatch && geoMatch.link && geoMatch.link.trim()) {
+    if (geoMatch && typeof geoMatch.link === 'string' && geoMatch.link.trim()) {
       targetUrl = geoMatch.link.trim();
     }
   }
 
   if (!targetUrl) {
-    if (platform.defaultLink && platform.defaultLink.trim()) {
+    if (typeof platform.defaultLink === 'string' && platform.defaultLink.trim()) {
       targetUrl = platform.defaultLink.trim();
-    } else if (platform.rawAffiliateUrl && platform.rawAffiliateUrl.trim()) {
+    } else if (typeof platform.rawAffiliateUrl === 'string' && platform.rawAffiliateUrl.trim()) {
       targetUrl = platform.rawAffiliateUrl.trim();
     }
   }
 
   // Fallback to first available geo link if no default is present (e.g. India-only platform accessed by proxy)
   if (!targetUrl && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
-    const firstValid = platform.geoLinks.find(g => g.link && g.link.trim());
+    const firstValid = platform.geoLinks.find(g => typeof g.link === 'string' && g.link.trim());
     if (firstValid) targetUrl = firstValid.link.trim();
   }
 

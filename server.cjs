@@ -1381,7 +1381,9 @@ Format your response exactly as JSON:
   }
 });
 function getGeoFromRequest(req) {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "127.0.0.1";
+  let ipHeader = req.headers["x-forwarded-for"];
+  if (Array.isArray(ipHeader)) ipHeader = ipHeader[0];
+  const ip = (typeof ipHeader === "string" ? ipHeader.split(",")[0] : ipHeader) || req.socket.remoteAddress || "127.0.0.1";
   const countryHeader = req.headers["cf-ipcountry"] || req.headers["x-appengine-country"];
   if (countryHeader && countryHeader !== "XX") {
     return {
@@ -1393,11 +1395,11 @@ function getGeoFromRequest(req) {
     };
   }
   return {
-    country: "United States",
-    countryCode: "US",
+    country: "India",
+    countryCode: "IN",
     city: "Global Region",
     ip: ip === "::1" ? "127.0.0.1" : ip,
-    flag: "\u{1F1FA}\u{1F1F8}"
+    flag: "\u{1F1EE}\u{1F1F3}"
   };
 }
 var BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|AdsBot-Google|Mediapartners-Google|Lighthouse/i;
@@ -1430,7 +1432,7 @@ function getFilteredPlatforms(req, geo) {
       }
     }
     if (!finalLink && p.geoLinks && Array.isArray(p.geoLinks) && p.geoLinks.length > 0) {
-      const firstValid = p.geoLinks.find((g) => g.link && g.link.trim());
+      const firstValid = p.geoLinks.find((g) => typeof g.link === "string" && g.link.trim());
       if (firstValid) finalLink = firstValid.link.trim();
     }
     let logoUrl = p.logoUrl;
@@ -1855,19 +1857,19 @@ app.get("/go/:slug", (req, res) => {
   let targetUrl = "";
   if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
     const geoMatch = platform.geoLinks.find((g) => g.country?.toUpperCase() === countryCode);
-    if (geoMatch && geoMatch.link && geoMatch.link.trim()) {
+    if (geoMatch && typeof geoMatch.link === "string" && geoMatch.link.trim()) {
       targetUrl = geoMatch.link.trim();
     }
   }
   if (!targetUrl) {
-    if (platform.defaultLink && platform.defaultLink.trim()) {
+    if (typeof platform.defaultLink === "string" && platform.defaultLink.trim()) {
       targetUrl = platform.defaultLink.trim();
-    } else if (platform.rawAffiliateUrl && platform.rawAffiliateUrl.trim()) {
+    } else if (typeof platform.rawAffiliateUrl === "string" && platform.rawAffiliateUrl.trim()) {
       targetUrl = platform.rawAffiliateUrl.trim();
     }
   }
   if (!targetUrl && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
-    const firstValid = platform.geoLinks.find((g) => g.link && g.link.trim());
+    const firstValid = platform.geoLinks.find((g) => typeof g.link === "string" && g.link.trim());
     if (firstValid) targetUrl = firstValid.link.trim();
   }
   if (!targetUrl) {

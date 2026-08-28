@@ -175,7 +175,8 @@ export default function App() {
           const targetLang = langMap[initialData.geo.countryCode];
           if (targetLang) {
             const cookieVal = `/en/${targetLang}`;
-            if (!document.cookie.includes(`googtrans=${cookieVal}`)) {
+            if (!document.cookie.includes(`googtrans=${cookieVal}`) && !sessionStorage.getItem('googtrans_attempted')) {
+              sessionStorage.setItem('googtrans_attempted', 'true');
               document.cookie = `googtrans=${cookieVal}; path=/`;
               document.cookie = `googtrans=${cookieVal}; path=/; domain=${window.location.hostname}`;
               setTimeout(() => { window.location.reload(); }, 500);
@@ -225,7 +226,8 @@ export default function App() {
           if (targetLang) {
             const cookieVal = `/en/${targetLang}`;
             // If the translation cookie isn't set, set it and let the script pick it up on reload or immediately
-            if (!document.cookie.includes(`googtrans=${cookieVal}`)) {
+            if (!document.cookie.includes(`googtrans=${cookieVal}`) && !sessionStorage.getItem('googtrans_attempted')) {
+              sessionStorage.setItem('googtrans_attempted', 'true');
               document.cookie = `googtrans=${cookieVal}; path=/`;
               document.cookie = `googtrans=${cookieVal}; path=/; domain=${window.location.hostname}`;
               setTimeout(() => {

@@ -1049,7 +1049,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                     type="text"
                                     value={currentLink}
                                     onChange={e => {
-                                      const newLinks = [...geoLinks];
+                                      const newLinks = geoLinks.map(g => ({ ...g }));
                                       const idx = newLinks.findIndex(g => g.country === countryCode);
                                       if (idx >= 0) {
                                         newLinks[idx].link = e.target.value;
