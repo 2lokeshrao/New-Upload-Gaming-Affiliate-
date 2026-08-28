@@ -500,6 +500,33 @@ function getGeoFromRequest(req: Request) {
 // Bot Detection Regex for Cloaking
 const BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|AdsBot-Google|Mediapartners-Google|Lighthouse/i;
 
+// Resolve the best available link for a platform based on country code
+function resolvePlatformLink(platform: any, countryCode: string): string {
+  let finalLink = '';
+  
+  if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
+    const match = platform.geoLinks.find((g: any) => g && typeof g.country === 'string' && g.country.toUpperCase() === countryCode);
+    if (match && typeof match.link === 'string' && match.link.trim()) {
+      finalLink = match.link.trim();
+    }
+  }
+  
+  if (!finalLink) {
+    if (typeof platform.defaultLink === 'string' && platform.defaultLink.trim()) {
+      finalLink = platform.defaultLink.trim();
+    } else if (typeof platform.rawAffiliateUrl === 'string' && platform.rawAffiliateUrl.trim()) {
+      finalLink = platform.rawAffiliateUrl.trim();
+    }
+  }
+  
+  if (!finalLink && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
+    const firstValid = platform.geoLinks.find((g: any) => typeof g.link === 'string' && g.link.trim());
+    if (firstValid) finalLink = firstValid.link.trim();
+  }
+  
+  return finalLink;
+}
+
 // Geo-Targeting & Link Routing Logic
 function getFilteredPlatforms(req: Request, geo: any) {
   const userAgent = req.headers['user-agent'] || '';
@@ -511,7 +538,7 @@ function getFilteredPlatforms(req: Request, geo: any) {
     if (bot) return true;
 
     // Allowed Countries Check
-    const allowed = (p.allowedCountries || []).map(c => c.toUpperCase());
+    const allowed = (p.allowedCountries || []).filter(c => typeof c === 'string').map(c => c.toUpperCase());
     if (allowed.length > 0) {
       // If specific countries are selected, only show to visitors from those countries
       if (allowed.includes(countryCode)) return true;
@@ -523,30 +550,7 @@ function getFilteredPlatforms(req: Request, geo: any) {
     // If no allowedCountries restricted list, platform is globally visible
     return true;
   }).map(p => {
-    let finalLink = '';
-    
-    // Priority 1: Match visitor's country from geoLinks
-    if (p.geoLinks && Array.isArray(p.geoLinks)) {
-      const match = p.geoLinks.find(g => g.country?.toUpperCase() === countryCode);
-      if (match && match.link && match.link.trim()) {
-        finalLink = match.link.trim();
-      }
-    }
-    
-    // Priority 2: Default / Global Link
-    if (!finalLink) {
-      if (p.defaultLink && p.defaultLink.trim()) {
-        finalLink = p.defaultLink.trim();
-      } else if (p.rawAffiliateUrl && p.rawAffiliateUrl.trim()) {
-        finalLink = p.rawAffiliateUrl.trim();
-      }
-    }
-
-    // Priority 3: First available geo link
-    if (!finalLink && p.geoLinks && Array.isArray(p.geoLinks) && p.geoLinks.length > 0) {
-      const firstValid = p.geoLinks.find(g => typeof g.link === 'string' && g.link.trim());
-      if (firstValid) finalLink = firstValid.link.trim();
-    }
+    let finalLink = resolvePlatformLink(p, countryCode);
     
     let logoUrl = p.logoUrl;
     if (typeof logoUrl === 'string' && logoUrl.startsWith('data:image/svg+xml;base64,ZGF0')) {
@@ -1072,45 +1076,32 @@ app.get('/go/:slug', (req, res) => {
   const geo = getGeoFromRequest(req);
   const countryCode = (geo?.countryCode || 'IN').toUpperCase();
 
-  // Resolve country-specific link first, then default/fallback link
-  let targetUrl = '';
-  if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
-    const geoMatch = platform.geoLinks.find(g => g.country?.toUpperCase() === countryCode);
-    if (geoMatch && typeof geoMatch.link === 'string' && geoMatch.link.trim()) {
-      targetUrl = geoMatch.link.trim();
-    }
-  }
-
-  if (!targetUrl) {
-    if (typeof platform.defaultLink === 'string' && platform.defaultLink.trim()) {
-      targetUrl = platform.defaultLink.trim();
-    } else if (typeof platform.rawAffiliateUrl === 'string' && platform.rawAffiliateUrl.trim()) {
-      targetUrl = platform.rawAffiliateUrl.trim();
-    }
-  }
-
-  // Fallback to first available geo link if no default is present (e.g. India-only platform accessed by proxy)
-  if (!targetUrl && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
-    const firstValid = platform.geoLinks.find(g => typeof g.link === 'string' && g.link.trim());
-    if (firstValid) targetUrl = firstValid.link.trim();
-  }
+  // Resolve country-specific link first, gracefully falling back to global/default
+  let targetUrl = resolvePlatformLink(platform, countryCode);
 
   if (!targetUrl) {
     targetUrl = '/';
   }
 
-  // Safely build the dynamic Affiliate URL with tracking parameters
-  if (targetUrl && targetUrl !== '/' && (clickId || sub1 || sub2)) {
+  // Safely build the dynamic Affiliate URL with all tracking parameters
+  if (targetUrl && targetUrl !== '/') {
     try {
       const formatted = targetUrl.startsWith('http://') || targetUrl.startsWith('https://') ? targetUrl : `https://${targetUrl}`;
       const urlObj = new URL(formatted);
+      
+      // Forward all incoming query parameters
+      for (const [key, value] of Object.entries(req.query)) {
+        if (typeof value === 'string') {
+          urlObj.searchParams.set(key, value);
+        }
+      }
+
+      // Specific S2S mappings if click_id is present
       if (clickId) {
         urlObj.searchParams.set('click_id', clickId as string);
-        urlObj.searchParams.set('payload', clickId as string);
-        urlObj.searchParams.set('sub3', clickId as string);
+        if (!urlObj.searchParams.has('payload')) urlObj.searchParams.set('payload', clickId as string);
+        if (!urlObj.searchParams.has('sub3')) urlObj.searchParams.set('sub3', clickId as string);
       }
-      if (sub1) urlObj.searchParams.set('sub1', sub1 as string);
-      if (sub2) urlObj.searchParams.set('sub2', sub2 as string);
       targetUrl = urlObj.toString();
     } catch (e) {
       logger.warn('Failed to parse URL for tracking params in /go/:slug', e);

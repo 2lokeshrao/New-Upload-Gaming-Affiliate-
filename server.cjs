@@ -1403,13 +1403,34 @@ function getGeoFromRequest(req) {
   };
 }
 var BOT_USER_AGENTS = /googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|pinterestbot|slackbot|vkShare|W3C_Validator|AdsBot-Google|Mediapartners-Google|Lighthouse/i;
+function resolvePlatformLink(platform, countryCode) {
+  let finalLink = "";
+  if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
+    const match = platform.geoLinks.find((g) => g && typeof g.country === "string" && g.country.toUpperCase() === countryCode);
+    if (match && typeof match.link === "string" && match.link.trim()) {
+      finalLink = match.link.trim();
+    }
+  }
+  if (!finalLink) {
+    if (typeof platform.defaultLink === "string" && platform.defaultLink.trim()) {
+      finalLink = platform.defaultLink.trim();
+    } else if (typeof platform.rawAffiliateUrl === "string" && platform.rawAffiliateUrl.trim()) {
+      finalLink = platform.rawAffiliateUrl.trim();
+    }
+  }
+  if (!finalLink && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
+    const firstValid = platform.geoLinks.find((g) => typeof g.link === "string" && g.link.trim());
+    if (firstValid) finalLink = firstValid.link.trim();
+  }
+  return finalLink;
+}
 function getFilteredPlatforms(req, geo) {
   const userAgent = req.headers["user-agent"] || "";
   const bot = BOT_USER_AGENTS.test(userAgent);
   const countryCode = (geo?.countryCode || "IN").toUpperCase();
   return statePlatforms.filter((p) => {
     if (bot) return true;
-    const allowed = (p.allowedCountries || []).map((c) => c.toUpperCase());
+    const allowed = (p.allowedCountries || []).filter((c) => typeof c === "string").map((c) => c.toUpperCase());
     if (allowed.length > 0) {
       if (allowed.includes(countryCode)) return true;
       if (p.isGlobal && (p.defaultLink || p.rawAffiliateUrl)) return true;
@@ -1417,24 +1438,7 @@ function getFilteredPlatforms(req, geo) {
     }
     return true;
   }).map((p) => {
-    let finalLink = "";
-    if (p.geoLinks && Array.isArray(p.geoLinks)) {
-      const match = p.geoLinks.find((g) => g.country?.toUpperCase() === countryCode);
-      if (match && match.link && match.link.trim()) {
-        finalLink = match.link.trim();
-      }
-    }
-    if (!finalLink) {
-      if (p.defaultLink && p.defaultLink.trim()) {
-        finalLink = p.defaultLink.trim();
-      } else if (p.rawAffiliateUrl && p.rawAffiliateUrl.trim()) {
-        finalLink = p.rawAffiliateUrl.trim();
-      }
-    }
-    if (!finalLink && p.geoLinks && Array.isArray(p.geoLinks) && p.geoLinks.length > 0) {
-      const firstValid = p.geoLinks.find((g) => typeof g.link === "string" && g.link.trim());
-      if (firstValid) finalLink = firstValid.link.trim();
-    }
+    let finalLink = resolvePlatformLink(p, countryCode);
     let logoUrl = p.logoUrl;
     if (typeof logoUrl === "string" && logoUrl.startsWith("data:image/svg+xml;base64,ZGF0")) {
       try {
@@ -1854,38 +1858,24 @@ app.get("/go/:slug", (req, res) => {
   }
   const geo = getGeoFromRequest(req);
   const countryCode = (geo?.countryCode || "IN").toUpperCase();
-  let targetUrl = "";
-  if (platform.geoLinks && Array.isArray(platform.geoLinks)) {
-    const geoMatch = platform.geoLinks.find((g) => g.country?.toUpperCase() === countryCode);
-    if (geoMatch && typeof geoMatch.link === "string" && geoMatch.link.trim()) {
-      targetUrl = geoMatch.link.trim();
-    }
-  }
-  if (!targetUrl) {
-    if (typeof platform.defaultLink === "string" && platform.defaultLink.trim()) {
-      targetUrl = platform.defaultLink.trim();
-    } else if (typeof platform.rawAffiliateUrl === "string" && platform.rawAffiliateUrl.trim()) {
-      targetUrl = platform.rawAffiliateUrl.trim();
-    }
-  }
-  if (!targetUrl && platform.geoLinks && Array.isArray(platform.geoLinks) && platform.geoLinks.length > 0) {
-    const firstValid = platform.geoLinks.find((g) => typeof g.link === "string" && g.link.trim());
-    if (firstValid) targetUrl = firstValid.link.trim();
-  }
+  let targetUrl = resolvePlatformLink(platform, countryCode);
   if (!targetUrl) {
     targetUrl = "/";
   }
-  if (targetUrl && targetUrl !== "/" && (clickId || sub1 || sub2)) {
+  if (targetUrl && targetUrl !== "/") {
     try {
       const formatted = targetUrl.startsWith("http://") || targetUrl.startsWith("https://") ? targetUrl : `https://${targetUrl}`;
       const urlObj = new URL(formatted);
+      for (const [key, value] of Object.entries(req.query)) {
+        if (typeof value === "string") {
+          urlObj.searchParams.set(key, value);
+        }
+      }
       if (clickId) {
         urlObj.searchParams.set("click_id", clickId);
-        urlObj.searchParams.set("payload", clickId);
-        urlObj.searchParams.set("sub3", clickId);
+        if (!urlObj.searchParams.has("payload")) urlObj.searchParams.set("payload", clickId);
+        if (!urlObj.searchParams.has("sub3")) urlObj.searchParams.set("sub3", clickId);
       }
-      if (sub1) urlObj.searchParams.set("sub1", sub1);
-      if (sub2) urlObj.searchParams.set("sub2", sub2);
       targetUrl = urlObj.toString();
     } catch (e) {
       logger.warn("Failed to parse URL for tracking params in /go/:slug", e);
