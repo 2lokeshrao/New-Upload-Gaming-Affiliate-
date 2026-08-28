@@ -1094,7 +1094,7 @@ app.use((0, import_compression.default)({
   }
 }));
 app.disable("x-powered-by");
-var PORT = 3e3;
+var PORT = process.env.PORT || 3e3;
 var JWT_SECRET = process.env.JWT_SECRET;
 var ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 var DEMO_PASSCODE = process.env.DEMO_PASSCODE;
