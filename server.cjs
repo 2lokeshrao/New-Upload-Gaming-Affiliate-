@@ -1094,7 +1094,7 @@ app.use((0, import_compression.default)({
   }
 }));
 app.disable("x-powered-by");
-var PORT = process.env.PORT || 3e3;
+var PORT = process.env.DEFAULT_APP_PORT || process.env.PORT || 3e3;
 var JWT_SECRET = process.env.JWT_SECRET;
 var ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 var DEMO_PASSCODE = process.env.DEMO_PASSCODE;
@@ -1306,14 +1306,23 @@ app.get("/api/cdn/images/:platformId.webp", async (req, res) => {
       const base64Data = platform.logoUrl.split(",")[1];
       buffer = Buffer.from(base64Data, "base64");
     } else {
-      let fetchUrl = platform.logoUrl;
-      if (fetchUrl.startsWith("/")) {
-        fetchUrl = `http://127.0.0.1:${PORT}${fetchUrl}`;
+      if (platform.logoUrl.startsWith("/")) {
+        let localPath = import_path.default.join(process.cwd(), "dist", platform.logoUrl);
+        if (process.env.NODE_ENV !== "production") {
+          localPath = import_path.default.join(process.cwd(), "public", platform.logoUrl);
+        }
+        const fsPromises = await import("fs/promises");
+        try {
+          buffer = await fsPromises.readFile(localPath);
+        } catch (err) {
+          buffer = await fsPromises.readFile(import_path.default.join(process.cwd(), platform.logoUrl));
+        }
+      } else {
+        const response = await fetch(platform.logoUrl);
+        if (!response.ok) throw new Error("Failed to fetch external image");
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
       }
-      const response = await fetch(fetchUrl);
-      if (!response.ok) throw new Error("Failed to fetch external image");
-      const arrayBuffer = await response.arrayBuffer();
-      buffer = Buffer.from(arrayBuffer);
     }
     const webpBuffer = await (0, import_sharp.default)(buffer).resize({ width: 128, withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
     res.setHeader("Content-Type", "image/webp");
@@ -2566,7 +2575,7 @@ async function startServer() {
   if (process.env.SENTRY_DSN) {
     Sentry.setupExpressErrorHandler(app);
   }
-  const server = app.listen(Number(PORT), "0.0.0.0", () => {
+  const server = app.listen(PORT, () => {
     logger.info(`Affiliate Hub App listening on port ${PORT}`);
   });
   server.on("error", (e) => {

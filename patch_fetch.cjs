@@ -1,31 +1,34 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/App.tsx', 'utf8');
+let code = fs.readFileSync('server.ts', 'utf8');
 
-const retryLogic = `
-      let res;
-      let usedAdmin = false;
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          if (token) {
-            res = await fetch('/api/admin/data', { headers: { Authorization: \`Bearer \${token}\` } });
-            if (res.ok) usedAdmin = true;
-          }
-          if (!res || !res.ok) {
-            res = await fetch('/api/data');
-          }
-          if (res && res.ok) break;
-        } catch (err) {
-          console.warn('Fetch attempt failed, retrying...', err);
+const oldCode = `
+      let fetchUrl = platform.logoUrl; if (fetchUrl.startsWith("/")) { fetchUrl = \`http://127.0.0.1:\${PORT}\${fetchUrl}\`; } const response = await fetch(fetchUrl);
+      if (!response.ok) throw new Error('Failed to fetch external image');
+      const arrayBuffer = await response.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+`.trim();
+
+const newCode = `
+      if (platform.logoUrl.startsWith("/")) {
+        let localPath = path.join(process.cwd(), 'dist', platform.logoUrl);
+        if (process.env.NODE_ENV !== 'production') {
+            localPath = path.join(process.cwd(), 'public', platform.logoUrl);
         }
-        retries--;
-        if (retries > 0) await new Promise(r => setTimeout(r, 1000));
+        const fsPromises = await import('fs/promises');
+        try {
+            buffer = await fsPromises.readFile(localPath);
+        } catch (err) {
+            // Fallback for local assets if not found (maybe placed directly in root)
+            buffer = await fsPromises.readFile(path.join(process.cwd(), platform.logoUrl));
+        }
+      } else {
+        const response = await fetch(platform.logoUrl);
+        if (!response.ok) throw new Error('Failed to fetch external image');
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
       }
-`;
+`.trim();
 
-code = code.replace(
-  /let res;\s*let usedAdmin = false;\s*if \(token\) \{\s*res = await fetch\('\/api\/admin\/data', \{ headers: \{ Authorization: `Bearer \$\{token\}` \} \}\);\s*if \(res\.ok\) usedAdmin = true;\s*\}\s*if \(\!res \|\| \!res\.ok\) \{\s*res = await fetch\('\/api\/data'\);\s*\}/,
-  retryLogic.trim()
-);
+code = code.replace(oldCode, newCode);
 
-fs.writeFileSync('src/App.tsx', code);
+fs.writeFileSync('server.ts', code);

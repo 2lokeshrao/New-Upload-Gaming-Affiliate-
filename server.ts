@@ -68,7 +68,7 @@ app.use(compression({
   }
 }));
 app.disable('x-powered-by');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.DEFAULT_APP_PORT || process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE;
 const DEMO_PASSCODE = process.env.DEMO_PASSCODE;
@@ -382,10 +382,24 @@ app.get('/api/cdn/images/:platformId.webp', async (req, res) => {
       const base64Data = platform.logoUrl.split(',')[1];
       buffer = Buffer.from(base64Data, 'base64');
     } else {
-      let fetchUrl = platform.logoUrl; if (fetchUrl.startsWith("/")) { fetchUrl = `http://127.0.0.1:${PORT}${fetchUrl}`; } const response = await fetch(fetchUrl);
-      if (!response.ok) throw new Error('Failed to fetch external image');
-      const arrayBuffer = await response.arrayBuffer();
-      buffer = Buffer.from(arrayBuffer);
+      if (platform.logoUrl.startsWith("/")) {
+        let localPath = path.join(process.cwd(), 'dist', platform.logoUrl);
+        if (process.env.NODE_ENV !== 'production') {
+            localPath = path.join(process.cwd(), 'public', platform.logoUrl);
+        }
+        const fsPromises = await import('fs/promises');
+        try {
+            buffer = await fsPromises.readFile(localPath);
+        } catch (err) {
+            // Fallback for local assets if not found (maybe placed directly in root)
+            buffer = await fsPromises.readFile(path.join(process.cwd(), platform.logoUrl));
+        }
+      } else {
+        const response = await fetch(platform.logoUrl);
+        if (!response.ok) throw new Error('Failed to fetch external image');
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+      }
     }
     
     const webpBuffer = await sharp(buffer)
@@ -1868,7 +1882,7 @@ const autoblogInterval = setInterval(async () => {
     Sentry.setupExpressErrorHandler(app);
   }
 
-  const server = app.listen(Number(PORT), '0.0.0.0', () => {
+  const server = app.listen(PORT, () => {
     logger.info(`Affiliate Hub App listening on port ${PORT}`);
   });
 
